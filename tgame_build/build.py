@@ -105,4 +105,5 @@ for w in leftovers:
     n = result.count(w)
     if n: print('WARNING: %d leftover reference(s) to %s' % (n, w))
 print('wrote', OUT, len(result.splitlines()), 'lines')
-input("Press Enter to continue...")
+if sys.stdin.isatty():                       # keeps the window open when double-clicked; skipped in CI and pipes
+    input("Press Enter to continue...")
