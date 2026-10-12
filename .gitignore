@@ -1,0 +1,8 @@
+node_modules/
+dist/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+/tgame-py/build/
+/tgame_build/out.html
+*.log

@@ -1,0 +1,91 @@
+﻿{
+    "name":  "tgame-app",
+    "productName":  "tgame",
+    "version":  "0.1.0",
+    "description":  "tgame Lite (plays .tgame stories) and tgame IDE (edits them), in one install.",
+    "main":  "src/main.js",
+    "private":  true,
+    "author":  "tgame",
+    "scripts":  {
+                    "sync":  "node scripts/sync.js",
+                    "start":  "npm run sync \u0026\u0026 electron .",
+                    "lite":  "electron . --lite",
+                    "ide":  "electron . --ide",
+                    "test":  "node test/run.js",
+                    "dist":  "npm run sync \u0026\u0026 npm test \u0026\u0026 electron-builder --win nsis"
+                },
+    "devDependencies":  {
+                            "codemirror":  "^5.65.16",
+                            "electron":  "^44.7.0",
+                            "electron-builder":  "^26.15.3"
+                        },
+    "build":  {
+                  "appId":  "dev.tgame.app",
+                  "productName":  "tgame",
+                  "copyright":  "tgame",
+                  "directories":  {
+                                      "output":  "dist",
+                                      "buildResources":  "build"
+                                  },
+                  "files":  [
+                                "src/**/*",
+                                "renderer/**/*",
+                                "vendor/**/*",
+                                "package.json"
+                            ],
+                  "extraResources":  [
+                                         {
+                                             "from":  "build/lite.ico",
+                                             "to":  "lite.ico"
+                                         },
+                                         {
+                                             "from":  "build/ide.ico",
+                                             "to":  "ide.ico"
+                                         },
+                                         {
+                                             "from":  "build/tgame-file.ico",
+                                             "to":  "tgame-file.ico"
+                                         }
+                                     ],
+                  "win":  {
+                              "target":  [
+                                             {
+                                                 "target":  "nsis",
+                                                 "arch":  [
+                                                              "x64"
+                                                          ]
+                                             }
+                                         ],
+                              "icon":  "build/icon.ico"
+                          },
+                  "nsis":  {
+                               "oneClick":  false,
+                               "perMachine":  false,
+                               "allowToChangeInstallationDirectory":  true,
+                               "createDesktopShortcut":  false,
+                               "createStartMenuShortcut":  false,
+                               "installerIcon":  "build/icon.ico",
+                               "uninstallerIcon":  "build/icon.ico",
+                               "include":  "build/installer.nsh",
+                               "artifactName":  "tgame-setup-${version}.exe"
+                           },
+                  "publish":  [
+                                  {
+                                      "provider":  "github",
+                                      "owner":  "codeiscool772",
+                                      "repo":  "tgame",
+                                      "releaseType":  "release"
+                                  }
+                              ]
+              },
+    "dependencies":  {
+                         "electron-updater":  "^6.8.9"
+                     },
+    "license":  "MIT",
+    "homepage":  "https://github.com/codeiscool772/tgame",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "git+https://github.com/codeiscool772/tgame.git",
+                       "directory":  "tgame-app"
+                   }
+}

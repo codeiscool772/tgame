@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>tgame Lite</title>
+<link rel="stylesheet" href="lite.css">
+</head>
+<body>
+<header id="bar">
+  <div id="title" title="">tgame Lite</div>
+  <div class="actions">
+    <button id="b-undo" type="button" title="Undo last move">Undo</button>
+    <button id="b-save" type="button" title="Save game (Ctrl+S)">Save</button>
+    <button id="b-load" type="button" title="Load saved game (Ctrl+L)">Load</button>
+    <button id="b-restart" type="button" title="Restart (F5)">Restart</button>
+    <button id="b-edit" type="button" title="Edit this story in tgame IDE (Ctrl+E)">Edit</button>
+  </div>
+</header>
+
+<div id="stage">
+  <section id="home" hidden>
+    <h1>tgame Lite</h1>
+    <p>Plays <code>.tgame</code> stories. Drop a file here, or:</p>
+    <p><button id="h-open" type="button" class="primary">Open a story…</button></p>
+    <div id="recent-wrap" hidden>
+      <h2>Recent</h2>
+      <ul id="recent"></ul>
+    </div>
+  </section>
+
+  <section id="problems" hidden>
+    <h2 id="problems-title">This story has errors</h2>
+    <p class="dim">Fix them in the IDE; this window reloads when you save.</p>
+    <ul id="problem-list"></ul>
+  </section>
+
+  <section id="game" hidden>
+    <main id="out" role="log" aria-live="polite" aria-label="Story"></main>
+    <ul id="choices" aria-label="Choices"></ul>
+    <form id="form"><input id="cmd" aria-label="Command" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="type a command…"></form>
+  </section>
+</div>
+
+<div id="drop" hidden>Drop a .tgame file to play it</div>
+
+<script src="../shared/runtime.js"></script>
+<script src="../shared/lint.js"></script>
+<script src="lite.js"></script>
+</body>
+</html>

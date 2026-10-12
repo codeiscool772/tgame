@@ -1,0 +1,60 @@
+:root{
+  --bg:#1e1e1e; --bar:#252526; --line:#333; --text:#d4d4d4; --dim:#8a8a8a; --accent:#d99058;
+  --accent-hi:#e6a56f; --cyan:#9cdcfe; --err:#f48771; --ok:#6a9955; --bright:#e7e7e7;
+  --mono:ui-monospace,Menlo,Monaco,Consolas,"Cascadia Mono",monospace;
+}
+@media (prefers-color-scheme: light){
+  :root{ --bg:#fbfaf7; --bar:#efece6; --line:#d8d4cb; --text:#2b2b2b; --dim:#7a766d; --accent:#b45a1f;
+         --accent-hi:#8f4413; --cyan:#1f5d8a; --err:#b3261e; --ok:#3a7d2c; --bright:#111; }
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.75 var(--mono)}
+body{display:flex;flex-direction:column}
+button{font:inherit}
+#bar{display:flex;align-items:center;gap:12px;padding:6px 12px;background:var(--bar);border-bottom:1px solid var(--line);flex:none}
+#title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--bright);font-size:13px}
+.actions{display:flex;gap:4px;flex:none}
+.actions button{background:none;border:1px solid transparent;color:var(--dim);padding:2px 10px;border-radius:3px;cursor:pointer;font-size:12.5px}
+.actions button:hover:not(:disabled){color:var(--bright);border-color:var(--line)}
+.actions button:disabled{opacity:.4;cursor:default}
+#stage{flex:1;overflow:auto}
+#game,#home,#problems{max-width:44rem;margin:0 auto;padding:2.2rem 1.25rem 5rem}
+[hidden]{display:none !important}
+h1{font-size:20px;color:var(--bright);margin:.2em 0 .6em}
+h2{font-size:14px;color:var(--bright);margin:1.6em 0 .5em}
+code{background:var(--bar);padding:1px 5px;border-radius:3px}
+.dim{color:var(--dim)}
+button.primary{background:var(--accent);color:#1b1b1b;border:0;padding:8px 18px;border-radius:3px;cursor:pointer;font-weight:600}
+button.primary:hover{background:var(--accent-hi)}
+#recent{list-style:none;padding:0;margin:0}
+#recent li{padding:2px 0}
+#recent a,#problem-list a{color:var(--accent);cursor:pointer;text-decoration:none}
+#recent a:hover,#problem-list a:hover{text-decoration:underline}
+#recent .dir{color:var(--dim);font-size:12.5px;margin-left:.6em}
+#problem-list{list-style:none;padding:0;margin:0}
+#problem-list li{padding:2px 0}
+#problem-list .sev-error{color:var(--err)}
+#problem-list .sev-warn{color:var(--dim)}
+#problem-list .ln{color:var(--dim);margin-right:.7em}
+
+/* the story, identical to an exported page */
+#out p{margin:0 0 .85em;white-space:pre-wrap}
+#out pre.pre{margin:0 0 .85em;white-space:pre;overflow-x:auto;font:inherit;line-height:1.3}
+#out p.echo{color:var(--cyan);opacity:.6;margin-bottom:.35em}
+#out p.err{color:var(--err)}
+#out p.sys{color:var(--ok);font-style:italic}
+#out p.end{color:#ce9178;font-style:italic;text-align:center}
+#out p.prompt{color:var(--accent);font-style:italic}
+#out em{color:var(--cyan);font-style:italic}
+#out strong{color:var(--bright);font-weight:600}
+#choices{list-style:none;padding:0;margin:.8em 0 0}
+#choices button{background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:.2em 0;text-align:left;display:flex;gap:.8em;width:100%}
+#choices button:hover,#choices button:focus-visible{color:var(--accent-hi);text-decoration:underline}
+#choices .num{color:var(--dim)}
+#form{margin-top:1.6em}
+#cmd{width:100%;background:var(--bar);border:1px solid var(--line);color:var(--bright);font:inherit;padding:.55em .75em;border-radius:3px;outline:0}
+#cmd:focus{border-color:var(--accent)}
+#form.awaiting #cmd{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+
+#drop{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);
+  color:var(--bright);font-size:20px;border:3px dashed var(--accent);margin:10px;border-radius:8px;pointer-events:none}

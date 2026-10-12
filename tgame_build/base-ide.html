@@ -1,0 +1,3160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>untitled.tgame — tgame studio</title>
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
+      onerror="this.href='https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css'">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"
+        onerror="document.write('<script src=\"https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js\"><\/script>')"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/mode/simple.min.js"
+        onerror="document.write('<script src=\"https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/mode/simple.min.js\"><\/script>')"></script>
+
+<style>
+:root{
+  --bg:#1e1e1e; --bg-alt:#252526; --bg-panel:#252526; --bg-activity:#333333;
+  --bg-tab-on:#1e1e1e; --bg-tab-off:#2d2d2d; --bg-hover:#2a2d2e;
+  --bg-active:#332620; --bg-input:#3c3c3c;
+  --line:#3c3c3c; --line-soft:#2d2d2d;
+  --text:#cccccc; --text-dim:#858585; --text-bright:#e7e7e7; --text-muted:#6a6a6a;
+  --amber:#d99058; --amber-hi:#e6a56f;
+  --amber-glow:rgba(217,144,88,.18); --amber-select:rgba(217,144,88,.32);
+  --syn-keyword:#569cd6; --syn-control:#c586c0; --syn-func:#dcdcaa;
+  --syn-type:#4ec9b0; --syn-string:#ce9178; --syn-number:#b5cea8;
+  --syn-var:#9cdcfe; --syn-comment:#6a9955; --syn-text:#d4d4d4; --syn-punct:#808080;
+  --ui:-apple-system,BlinkMacSystemFont,"Segoe UI","Ubuntu",sans-serif;
+  --mono:"SF Mono",Monaco,Menlo,Consolas,"Liberation Mono",monospace;
+  --sidebar-w:260px; --panel-h:260px; --tab-h:36px; --bar-h:22px;
+  --editor-fs:14px; --editor-lh:21px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--text);font:13px/1.4 var(--ui);-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit;background:none;border:0;outline:0;padding:0;margin:0}
+button{cursor:pointer}
+::-webkit-scrollbar{width:14px;height:14px}
+::-webkit-scrollbar-thumb{background:#424242;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:#4f4f4f;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-track{background:transparent}
+
+.app{
+  display:grid;
+  grid-template-columns:48px var(--sidebar-w) 1fr;
+  grid-template-rows:1fr var(--bar-h);
+  grid-template-areas:"activity sidebar main" "status status status";
+  height:100vh; overflow:hidden;
+}
+.app.sidebar-hidden{grid-template-columns:48px 0 1fr}
+.app.sidebar-hidden .sidebar{display:none}
+
+.activity-bar{grid-area:activity; background:var(--bg-activity); display:flex; flex-direction:column; overflow:hidden}
+.activity{position:relative; height:48px; display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,.4); transition:color .12s; border-left:2px solid transparent}
+.activity:hover{color:#fff}
+.activity.active{color:#fff; border-left-color:var(--amber)}
+.activity svg{display:block; width:22px; height:22px}
+.activity .badge{position:absolute; bottom:6px; right:6px; min-width:16px; height:16px; border-radius:8px;
+  background:var(--amber); color:var(--bg); font:600 10px/16px var(--ui); text-align:center;
+  padding:0 4px; display:none}
+.activity .badge.on{display:block}
+.activity .badge.warn{background:#d7ba7d; color:var(--bg)}
+.activity-bar .spacer{flex:1}
+
+.sidebar{grid-area:sidebar; background:var(--bg-alt); overflow:hidden; display:flex; flex-direction:column; min-width:0}
+.sidebar-view{display:none; flex-direction:column; overflow:hidden; flex:1; min-height:0}
+.sidebar-view.active{display:flex}
+.section{display:flex; flex-direction:column; min-height:0}
+.section-head{height:24px; padding:0 10px; display:flex; align-items:center; gap:2px;
+  font:600 11px/1 var(--ui); text-transform:uppercase; letter-spacing:.08em;
+  color:var(--text); user-select:none; flex:0 0 24px}
+.section-head:hover{background:var(--bg-hover)}
+.section-head .chev{width:16px; height:16px; display:flex; align-items:center; justify-content:center;
+  transform:rotate(90deg); transition:transform .1s}
+.section-head.collapsed .chev{transform:rotate(0)}
+.section-head .count{margin-left:auto; font-weight:400; font-size:11px;
+  color:var(--text-dim); text-transform:none; letter-spacing:0; padding:0 6px}
+.section-body{overflow-y:auto; overflow-x:hidden; flex:1; min-height:0}
+.section.collapsed .section-body{display:none}
+
+.search-wrap{padding:6px 10px}
+.search-wrap input{width:100%; background:var(--bg-input); color:var(--text-bright);
+  padding:5px 9px; font:12px/1.4 var(--ui); border:1px solid transparent; border-radius:3px;
+  transition:border-color .1s}
+.search-wrap input::placeholder{color:var(--text-muted)}
+.search-wrap input:focus{border-color:var(--amber)}
+
+.row{height:24px; padding:0 10px; display:flex; align-items:center; gap:6px;
+  font:13px/24px var(--ui); color:var(--text); cursor:pointer; user-select:none;
+  white-space:nowrap; position:relative}
+.row:hover{background:var(--bg-hover)}
+.row.active{background:var(--bg-active)}
+.row.active:hover{background:var(--bg-active)}
+.row .icon{flex:0 0 16px; width:16px; height:16px; display:flex; align-items:center; justify-content:center; color:var(--text-dim)}
+.row .icon.start{color:var(--amber)}
+.row .icon.ending{color:var(--syn-string)}
+.row .label{flex:1; overflow:hidden; text-overflow:ellipsis}
+.row .meta{color:var(--text-muted); font-size:11px; font-family:var(--mono); flex:0 0 auto}
+.row.problem{height:auto; min-height:24px; padding:4px 10px; align-items:flex-start;
+  font-size:12.5px; line-height:1.4; white-space:normal}
+.row.problem .icon{margin-top:2px}
+.row.problem .body{flex:1; min-width:0; word-wrap:break-word}
+.row.problem .where{color:var(--text-muted); font-family:var(--mono); font-size:11px; margin-right:6px}
+.row.problem.error .icon{color:#f48771}
+.row.problem.warn .icon{color:#d7ba7d}
+.row.problem .icon svg{width:14px; height:14px}
+.row.example .label{color:var(--text-bright)}
+.row.example .desc{display:block; color:var(--text-muted); font-size:11px; margin-top:1px}
+.row.example{height:auto; padding:6px 10px; align-items:flex-start}
+.row.example .body{flex:1; min-width:0}
+.row.example .icon{color:var(--amber)}
+
+.empty-state{padding:16px 14px; color:var(--text-muted); font-size:12px; line-height:1.6}
+.empty-state code{font-family:var(--mono); background:var(--bg-input); padding:1px 5px;
+  border-radius:2px; color:var(--syn-string); font-size:11.5px}
+
+.vars-list{padding:4px 0}
+.vars-row{display:flex; align-items:center; height:22px; padding:0 12px;
+  font:12px/22px var(--mono); gap:12px}
+.vars-row .k{flex:1; color:var(--syn-var); overflow:hidden; text-overflow:ellipsis}
+.vars-row .v{color:var(--syn-number)}
+.vars-row.changed{animation:vflash .8s ease}
+@keyframes vflash{from{background:var(--amber-glow)} to{background:transparent}}
+
+.map-wrap{padding:14px 10px 20px; overflow:auto; height:100%; display:flex; align-items:flex-start; justify-content:center}
+.map-wrap svg{display:block; overflow:visible}
+.map-wrap .map-edge{stroke:var(--line); stroke-width:1.4; fill:none}
+.map-wrap .map-node{stroke:var(--line); stroke-width:1.8; fill:var(--bg-alt); cursor:pointer;
+  transition:stroke .15s, fill .15s}
+.map-wrap .map-node:hover{stroke:var(--amber-hi)}
+.map-wrap .map-node.is-start{stroke:var(--amber); fill:var(--amber-glow)}
+.map-wrap .map-node.is-end{stroke:var(--syn-string)}
+.map-wrap .map-node.is-unreachable{stroke:var(--line-soft); stroke-dasharray:3 2; opacity:.55}
+.map-wrap .map-label{fill:var(--text-dim); font:10px var(--mono); text-anchor:middle;
+  pointer-events:none; user-select:none}
+.map-wrap .map-label.is-start{fill:var(--amber)}
+.map-legend{padding:8px 12px; display:flex; flex-wrap:wrap; gap:10px; font-size:11px;
+  color:var(--text-dim); border-bottom:1px solid var(--line-soft)}
+.map-legend .dot{display:inline-block; width:9px; height:9px; border-radius:50%;
+  margin-right:5px; vertical-align:-1px; border:1.5px solid var(--line)}
+.map-legend .dot.start{background:var(--amber-glow); border-color:var(--amber)}
+.map-legend .dot.end{border-color:var(--syn-string)}
+.map-legend .dot.unreachable{border-style:dashed; opacity:.55}
+
+.main{grid-area:main; display:flex; flex-direction:column; min-width:0; min-height:0; overflow:hidden; background:var(--bg)}
+
+.tabbar{flex:0 0 var(--tab-h); background:var(--bg-tab-off); display:flex; align-items:stretch; min-width:0}
+.tabs{display:flex; align-items:stretch; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; flex:0 1 auto}
+.tabs::-webkit-scrollbar{display:none}
+.tab{position:relative; display:flex; align-items:center; height:var(--tab-h);
+  padding:0 10px 0 12px; gap:7px; background:var(--bg-tab-off); border-right:1px solid var(--line-soft);
+  color:var(--text-dim); font:13px/var(--tab-h) var(--ui); white-space:nowrap; max-width:240px; flex:0 0 auto}
+.tab .icon{flex:0 0 14px; color:inherit; opacity:.85}
+.tab .icon svg{width:14px; height:14px; display:block}
+.tab .name{overflow:hidden; text-overflow:ellipsis; max-width:180px}
+.tab .dirty{display:none; width:8px; height:8px; border-radius:50%; background:var(--amber);
+  flex:0 0 auto; margin-left:-2px}
+.tab.dirty .dirty{display:block}
+.tab.active{background:var(--bg-tab-on); color:var(--text-bright)}
+.tab.active::before{content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--amber)}
+.tab .close{width:16px; height:16px; display:flex; align-items:center; justify-content:center;
+  border-radius:3px; opacity:0; margin-left:2px; color:inherit}
+.tab:hover .close,
+.tab.active .close{opacity:.7}
+.tab .close:hover{background:rgba(255,255,255,.12); opacity:1}
+.tab .close svg{width:12px; height:12px; display:block}
+
+.tabbar-actions{margin-left:auto; display:flex; align-items:center; padding:0 6px; gap:2px}
+.icon-btn{height:24px; min-width:24px; padding:0 8px; display:inline-flex; align-items:center;
+  justify-content:center; gap:6px; color:var(--text); border-radius:4px; font:13px/1 var(--ui);
+  transition:background .1s, color .1s}
+.icon-btn:hover{background:rgba(255,255,255,.09); color:var(--text-bright)}
+.icon-btn svg{width:16px; height:16px; display:block}
+.icon-btn.primary{background:var(--amber); color:#2a1a0e; padding:0 11px; font-weight:500}
+.icon-btn.primary:hover{background:var(--amber-hi)}
+.icon-btn.primary svg{fill:#2a1a0e; stroke:none}
+
+.breadcrumbs{flex:0 0 22px; display:flex; align-items:center; padding:0 20px; gap:6px;
+  font:12px/22px var(--ui); color:var(--text-dim); border-bottom:1px solid var(--line-soft);
+  background:var(--bg); overflow:hidden; white-space:nowrap}
+.breadcrumbs .crumb{color:var(--text-dim)}
+.breadcrumbs .crumb.last{color:var(--text-bright)}
+.breadcrumbs .crumb.active{color:var(--amber)}
+.breadcrumbs .sep{color:var(--text-muted); opacity:.6}
+
+.editor-host{flex:1; min-height:0; display:flex; overflow:hidden}
+.editor{flex:1; display:flex; min-width:0; min-height:0; overflow:hidden; position:relative}
+.edit-wrap{flex:1; position:relative; min-width:0; overflow:hidden}
+.editor-placeholder{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:var(--text-muted); font-size:13px; background:var(--bg)}
+
+.CodeMirror{position:absolute; inset:0; height:auto !important;
+  background:var(--bg) !important; color:var(--syn-text);
+  font-family:var(--mono); font-size:var(--editor-fs); line-height:var(--editor-lh)}
+.CodeMirror-scroll{height:100%}
+.CodeMirror-gutters{background:var(--bg) !important; border-right:1px solid var(--line-soft) !important}
+.CodeMirror-linenumber{color:var(--text-muted) !important}
+.CodeMirror-cursor{border-left:1.5px solid var(--amber-hi) !important}
+.CodeMirror-selected{background:var(--amber-select) !important}
+.CodeMirror-focused .CodeMirror-selected{background:var(--amber-select) !important}
+.CodeMirror-activeline-background{background:rgba(255,255,255,.035) !important}
+
+.cm-s-default .cm-keyword{color:var(--syn-keyword)}
+.cm-s-default .cm-def{color:var(--syn-type)}
+.cm-s-default .cm-meta{color:var(--syn-string)}
+.cm-s-default .cm-variable-2{color:var(--syn-var)}
+.cm-s-default .cm-comment{color:var(--syn-comment)}
+.cm-s-default .cm-number{color:var(--syn-number)}
+.cm-s-default .cm-atom{color:var(--syn-number)}
+.cm-s-default .cm-string{color:var(--syn-string)}
+.cm-s-default .cm-operator{color:var(--syn-punct)}
+.cm-s-default .cm-variable{color:var(--syn-text)}
+.cm-s-default .cm-property{color:var(--syn-var)}
+
+.cm-error-line{background:rgba(244,135,113,.10) !important}
+.cm-error-gutter{color:#f48771 !important}
+
+.panel-resizer{flex:0 0 5px; background:transparent; cursor:ns-resize; position:relative; z-index:5}
+.panel-resizer:hover,
+.panel-resizer.dragging{background:var(--amber)}
+.panel{flex:0 0 var(--panel-h); min-height:60px; max-height:calc(100% - 140px);
+  display:flex; flex-direction:column; background:var(--bg); border-top:1px solid var(--line); min-width:0}
+.app.panel-hidden .panel,
+.app.panel-hidden .panel-resizer{display:none}
+
+.panel-head{flex:0 0 36px; display:flex; align-items:center; padding:0 10px;
+  background:var(--bg-panel); border-bottom:1px solid var(--line-soft); gap:4px}
+.panel-tab{height:36px; padding:0 12px; display:flex; align-items:center; color:var(--text-dim);
+  font:11px/36px var(--ui); text-transform:uppercase; letter-spacing:.08em;
+  border-bottom:1px solid transparent; position:relative; top:1px}
+.panel-tab.active{color:var(--text-bright); border-bottom-color:var(--amber)}
+.panel-head .spacer{flex:1}
+.panel-head .icon-btn{height:22px; min-width:22px; font-size:12px; color:var(--text-dim)}
+.panel-head .icon-btn:hover{color:var(--text-bright)}
+.auto-label{display:flex; align-items:center; gap:5px; padding:0 9px; height:22px;
+  color:var(--text-dim); font-size:11px; cursor:pointer; user-select:none; border-radius:3px}
+.auto-label:hover{color:var(--text); background:rgba(255,255,255,.04)}
+.auto-label input{accent-color:var(--amber); cursor:pointer; margin:0}
+
+.panel-body{flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden}
+.play-area{flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden}
+.out{flex:1; overflow-y:auto; padding:16px 22px 4px; font:13px/1.7 var(--mono); color:var(--text)}
+.out p{margin:0 0 .75em; white-space:pre-wrap; animation:fade .15s ease-out}
+.out p.tw{animation:none}
+.out p.echo{color:var(--syn-var); opacity:.6; margin-bottom:.25em}
+.out p.err{color:#f48771}
+.out p.sys{color:var(--text-muted); font-style:italic}
+.out p.end{color:var(--syn-string); font-style:italic; margin-top:1.2em; text-align:center}
+.out p.prompt{color:var(--amber); font-style:italic}
+.out em{color:var(--syn-var); font-style:italic}
+.out strong{color:var(--text-bright); font-weight:600}
+@keyframes fade{from{opacity:0} to{opacity:1}}
+
+.choices{list-style:none; margin:0; padding:0 22px 4px}
+.choices li{margin:0}
+.choices button{display:flex; gap:10px; width:100%; padding:3px 0; color:var(--amber);
+  font:13px/1.6 var(--mono); text-align:left; border-radius:0; transition:color .1s}
+.choices button:hover{color:var(--amber-hi); text-decoration:underline}
+.choices .num{color:var(--text-muted); flex:0 0 auto; min-width:1.4em}
+
+.cmd-row{padding:0 22px 14px; flex:0 0 auto}
+.cmd-row input{width:100%; background:var(--bg-input); color:var(--text-bright);
+  padding:7px 11px; font:12px/1.4 var(--mono); border:1px solid var(--bg-input);
+  border-radius:3px; transition:border-color .1s}
+.cmd-row input:focus{border-color:var(--amber)}
+.cmd-row input::placeholder{color:#8c8c8c}
+.cmd-row.awaiting input{border-color:var(--amber); box-shadow:0 0 0 1px var(--amber)}
+.cmd-row.hidden{display:none}
+
+.status-bar{grid-area:status; background:var(--amber); color:#2a1a0e;
+  display:flex; align-items:stretch; font:12px/22px var(--ui); overflow:hidden; user-select:none}
+.status-item{display:flex; align-items:center; gap:5px; padding:0 9px; font-size:12px;
+  white-space:nowrap; font-weight:500}
+.status-item.clickable{cursor:pointer}
+.status-item.clickable:hover{background:rgba(0,0,0,.12)}
+.status-item svg{width:13px; height:13px; display:block}
+.status-bar .spacer{flex:1}
+
+.overlay{position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:100;
+  display:flex; align-items:flex-start; justify-content:center; padding:60px 20px;
+  animation:fade .12s ease-out}
+.overlay[hidden]{display:none}
+.dialog{background:var(--bg-alt); border:1px solid var(--line); border-radius:6px;
+  max-width:660px; width:100%; max-height:calc(100vh - 120px); display:flex; flex-direction:column;
+  box-shadow:0 12px 48px rgba(0,0,0,.6)}
+.dialog-head{padding:18px 24px 12px; border-bottom:1px solid var(--line-soft)}
+.dialog-head h2{margin:0; font:400 17px/1.3 var(--ui); color:var(--text-bright)}
+.dialog-head .sub{margin-top:6px; font-size:12.5px; color:var(--text-dim); line-height:1.55}
+.dialog-body{padding:18px 24px; overflow-y:auto; flex:1; font-size:13.5px; line-height:1.65; color:var(--text)}
+.dialog-body p{margin:0 0 10px}
+.dialog-body h3{margin:20px 0 8px; font:600 11px/1 var(--ui); text-transform:uppercase;
+  letter-spacing:.08em; color:var(--amber)}
+.dialog-body h3:first-child{margin-top:2px}
+.dialog-body pre{margin:0 0 12px; padding:11px 15px; background:#171717;
+  border:1px solid var(--line-soft); border-radius:4px; font:12.5px/1.6 var(--mono);
+  color:var(--syn-text); overflow:auto; white-space:pre}
+.dialog-body code{font-family:var(--mono); font-size:12.5px; background:#171717;
+  padding:1px 6px; border-radius:3px; color:var(--syn-string); border:1px solid var(--line-soft)}
+.dialog-body kbd{display:inline-block; font:11px var(--mono); background:#171717;
+  border:1px solid var(--line); border-bottom-width:2px; border-radius:3px;
+  padding:1px 6px; color:var(--text-bright); margin:0 1px}
+.dialog-body ul{margin:6px 0 12px; padding-left:22px}
+.dialog-body ul li{margin:3px 0}
+.dialog-foot{padding:14px 24px 18px; display:flex; align-items:center; gap:8px;
+  border-top:1px solid var(--line-soft)}
+.dialog-foot .spacer{flex:1}
+.btn{padding:6px 14px; border-radius:4px; font:13px/1 var(--ui); color:var(--text);
+  background:#3a3d41; transition:background .1s, color .1s}
+.btn:hover{background:#45494e}
+.btn.primary{background:var(--amber); color:#2a1a0e; font-weight:500}
+.btn.primary:hover{background:var(--amber-hi)}
+.btn.ghost{background:transparent; color:var(--text-dim)}
+.btn.ghost:hover{background:rgba(255,255,255,.06); color:var(--text)}
+.btn[disabled]{opacity:.35; cursor:not-allowed}
+
+.dots{display:flex; gap:5px}
+.dots i{width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .15s}
+.dots i.on{background:var(--amber)}
+
+.palette-overlay{position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:200;
+  display:flex; justify-content:center; padding-top:60px; animation:fade .1s ease-out}
+.palette-overlay[hidden]{display:none}
+.palette{width:min(600px, calc(100vw - 40px)); max-height:calc(100vh - 120px);
+  background:var(--bg-alt); border:1px solid var(--line); border-radius:8px;
+  box-shadow:0 8px 44px rgba(0,0,0,.65); display:flex; flex-direction:column; overflow:hidden}
+.palette input{width:100%; padding:11px 15px; background:var(--bg-input);
+  color:var(--text-bright); font:13px/1.4 var(--ui); border-bottom:1px solid var(--line-soft)}
+.palette input::placeholder{color:#8c8c8c}
+.palette-list{overflow-y:auto; max-height:400px; padding:4px 0}
+.palette-item{display:flex; align-items:center; padding:6px 15px; gap:12px;
+  font:13px/1.5 var(--ui); color:var(--text); cursor:pointer; white-space:nowrap}
+.palette-item:hover,
+.palette-item.sel{background:var(--bg-active); color:#fff}
+.palette-item .label{flex:1; overflow:hidden; text-overflow:ellipsis}
+.palette-item .hint{color:var(--text-muted); font-size:11px; font-family:var(--mono)}
+.palette-item.sel .hint{color:rgba(255,255,255,.7)}
+.palette-empty{padding:14px; color:var(--text-muted); font-size:12.5px; text-align:center}
+
+@media (max-width:820px){
+  .app{grid-template-columns:48px 0 1fr}
+  .sidebar{display:none}
+  .app.sidebar-open{grid-template-columns:48px min(280px, 60vw) 1fr}
+  .app.sidebar-open .sidebar{display:flex}
+  .breadcrumbs{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <nav class="activity-bar">
+    <button class="activity active" data-activity="story" title="Story — passages">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 6s3-2 8-2 8 2 8 2v13s-3-2-8-2-8 2-8 2z"/>
+        <path d="M12 4v15"/>
+      </svg>
+    </button>
+    <button class="activity" data-activity="map" title="Map — how passages connect">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/>
+        <line x1="6" y1="8.2" x2="12" y2="15.8"/><line x1="18" y1="8.2" x2="12" y2="15.8"/>
+      </svg>
+    </button>
+    <button class="activity" data-activity="problems" title="Problems">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <span class="badge" id="ab-badge-problems">0</span>
+    </button>
+    <button class="activity" data-activity="examples" title="Examples">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3l1.4 4.6L18 9l-4.6 1.4L12 15l-1.4-4.6L6 9l4.6-1.4z"/>
+        <path d="M18.5 16.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/>
+      </svg>
+    </button>
+    <button class="activity" data-activity="vars" title="State — live variables">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 4H8a2 2 0 0 0-2 2v3c0 1.1-.9 2-2 2 1.1 0 2 .9 2 2v3a2 2 0 0 0 2 2h1"/>
+        <path d="M15 4h1a2 2 0 0 1 2 2v3c0 1.1.9 2 2 2-1.1 0-2 .9-2 2v3a2 2 0 0 1-2 2h-1"/>
+      </svg>
+    </button>
+    <div class="spacer"></div>
+    <button class="activity" id="btn-help-activity" title="Language reference (?)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </button>
+  </nav>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-view active" data-view="story">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="story">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>Story</span><span class="count" id="story-count"></span>
+        </div>
+        <div class="search-wrap">
+          <input type="text" id="passage-search" placeholder="Filter passages…" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="section-body"><div id="story-tree"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-view" data-view="map">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="map">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>Map</span>
+        </div>
+        <div class="map-legend">
+          <span><i class="dot start"></i>start</span>
+          <span><i class="dot end"></i>ending</span>
+          <span><i class="dot unreachable"></i>unreachable</span>
+        </div>
+        <div class="section-body">
+          <div class="map-wrap" id="map-wrap">
+            <div class="empty-state" style="text-align:center">No passages yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-view" data-view="problems">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="problems">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>Problems</span><span class="count" id="problems-count"></span>
+        </div>
+        <div class="section-body"><div id="problems-list"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-view" data-view="examples">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="examples">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>Examples</span>
+        </div>
+        <div class="section-body"><div id="examples-list"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-view" data-view="vars">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="vars">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>State</span>
+        </div>
+        <div class="section-body"><div id="vars-list"></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="tabbar">
+      <div class="tabs">
+        <div class="tab active" id="file-tab">
+          <span class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+              <polyline points="13 2 13 9 20 9"/>
+            </svg>
+          </span>
+          <span class="name" id="tab-name">untitled.tgame</span>
+          <span class="dirty" title="Unsaved changes"></span>
+        </div>
+      </div>
+      <div class="tabbar-actions">
+        <button class="icon-btn" id="btn-toggle-panel" title="Toggle panel (Ctrl+J)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="1"/>
+            <line x1="3" y1="14" x2="21" y2="14"/>
+          </svg>
+        </button>
+        <button class="icon-btn primary" id="btn-run" title="Run (Ctrl+Enter)">
+          <svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>
+          <span>Run</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="breadcrumbs" id="breadcrumbs">
+      <span class="crumb">untitled.tgame</span>
+    </div>
+
+    <div class="editor-host">
+      <div class="editor">
+        <div class="edit-wrap">
+          <div class="editor-placeholder" id="editor-placeholder">Loading editor…</div>
+          <textarea id="src" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-resizer" id="panel-resizer"></div>
+
+    <div class="panel" id="panel">
+      <div class="panel-head">
+        <button class="panel-tab active">Play</button>
+        <span class="spacer"></span>
+        <label class="auto-label" title="Re-run as you type">
+          <input type="checkbox" id="auto-run" checked>
+          <span>auto</span>
+        </label>
+        <button class="icon-btn" id="btn-restart" title="Restart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>
+          </svg>
+        </button>
+      </div>
+      <div class="panel-body">
+        <div class="play-area">
+          <div class="out" id="out"></div>
+          <ul class="choices" id="choices"></ul>
+          <form class="cmd-row" id="cmd-form">
+            <input id="cmd" placeholder="type a command or number…" autocomplete="off" autocorrect="off" spellcheck="false">
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="status-bar">
+    <div class="status-item">tgame 2.0</div>
+    <div class="status-item clickable" id="st-problems" title="Show problems">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span id="st-problems-text">0</span>
+    </div>
+    <div class="status-item" id="st-stats">0 passages</div>
+    <div class="spacer"></div>
+    <div class="status-item clickable" id="st-position" title="Cursor position">Ln 1, Col 1</div>
+    <div class="status-item clickable" title="Command palette (Ctrl+Shift+P)" id="st-palette">⌘ Commands</div>
+    <div class="status-item" id="st-saved" title="Autosave" style="opacity:0">✓ Saved</div>
+  </footer>
+</div>
+
+<input type="file" id="file-input" accept=".tgame,.txt,text/plain" hidden>
+
+<div class="overlay" id="welcome-modal" hidden>
+  <div class="dialog" style="max-width:540px">
+    <div class="dialog-head">
+      <h2>Welcome to tgame studio</h2>
+      <div class="sub">A tiny language for text adventures. One plain-text file per game.</div>
+    </div>
+    <div class="dialog-body">
+      <p>You're looking at a <strong>template</strong>. Replace it with your own story, or open an example from the <strong>Examples</strong> view in the activity rail.</p>
+      <p style="color:var(--text-dim); font-size:12.5px; margin-top:14px">
+        <strong style="color:var(--text)">Quick keys</strong><br>
+        <kbd>Ctrl</kbd><kbd>Enter</kbd> run &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>P</kbd> command palette<br>
+        <kbd>Ctrl</kbd><kbd>J</kbd> toggle play panel &nbsp;·&nbsp;
+        <kbd>?</kbd> language reference
+      </p>
+    </div>
+    <div class="dialog-foot">
+      <button class="btn primary" id="welcome-tour">Take the tour</button>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="welcome-skip">Skip</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="tutorial-modal" hidden>
+  <div class="dialog" style="max-width:560px">
+    <div class="dialog-head"><h2 id="tut-title">—</h2></div>
+    <div class="dialog-body" id="tut-body"></div>
+    <div class="dialog-foot">
+      <div class="dots" id="tut-dots"></div>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="tut-back">Back</button>
+      <button class="btn primary" id="tut-next">Next</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="help-modal" hidden>
+  <div class="dialog">
+    <div class="dialog-head">
+      <h2>tgame language reference · format 2</h2>
+      <div class="sub">Everything the language understands.</div>
+    </div>
+    <div class="dialog-body">
+      <h3>Directives</h3>
+      <pre>@title   My Game
+@author  You
+@start   entrance
+@set     score = 0
+@list    clues
+@seed    42          <span style="color:var(--syn-comment)">// deterministic randomness</span>
+@parser              <span style="color:var(--syn-comment)">// typed input instead of buttons</span>
+@typewriter          <span style="color:var(--syn-comment)">// enable typewriter effect</span>
+@typewriter fast     <span style="color:var(--syn-comment)">// or: slow, or a number (ms/char)</span></pre>
+
+      <h3>Passages</h3>
+      <p>Every place in the story is a passage. Start one with <code>:: name</code>. Any line that isn't special is narration.</p>
+      <pre>:: entrance
+The cave mouth yawns open.
+Cold air spills out.</pre>
+
+      <h3>Choices</h3>
+      <p>A line starting with <code>*</code> gives the player a choice. End with <code>-&gt; target</code> to move; omit the target to <strong>stay in place</strong>.</p>
+      <pre>* Take the lamp -&gt; entrance [get lamp]
+* Toggle the lantern [lamp = not lamp]
+* Go north -&gt; dark_hall</pre>
+
+      <h3>Player input</h3>
+      <p>A line starting with <code>?</code> asks the player to type something. The prompt is the whole line; the answer goes in the bracketed variable at the end.</p>
+      <pre>? What is your name? [name]
+
+Well then, {name}.</pre>
+
+      <h3>Pause</h3>
+      <p>A line that is just <code>...</code> waits half a second before continuing. Add a duration to taste.</p>
+      <pre>The lights flicker.
+...
+... 800
+... 2s
+The lights go out.</pre>
+
+      <h3>Typewriter</h3>
+      <p>Toggle the typewriter effect mid-passage with these marker lines:</p>
+      <pre>~type      <span style="color:var(--syn-comment)">// enable</span>
+~normal    <span style="color:var(--syn-comment)">// disable</span>
+~fast      <span style="color:var(--syn-comment)">// enable at fast speed</span>
+~slow      <span style="color:var(--syn-comment)">// enable at slow speed</span></pre>
+      <p>Click anywhere in the play panel to skip the current paragraph.</p>
+
+      <h3>Variables</h3>
+      <pre>@set score = 0
+
+You have <span class="tx-var">{score}</span> {score == 1 | point | points}.</pre>
+
+      <h3>Inventory</h3>
+      <pre>[get lamp]            <span style="color:var(--syn-comment)">// add item</span>
+[drop lamp]           <span style="color:var(--syn-comment)">// remove item</span>
+[clear inventory]     <span style="color:var(--syn-comment)">// empty it</span>
+
+if has lamp:
+You can see.
+end
+
+You are carrying {inventory}.</pre>
+
+      <h3>Lists</h3>
+      <pre>@list clues
+
+[clues add footprints]
+[clues remove footprints]
+[clues clear]</pre>
+
+      <h3>Conditions</h3>
+      <pre>if has lamp and score &gt; 5:
+You feel confident.
+end
+
+if not has_lamp:
+It is dark.
+end</pre>
+
+      <h3>Inline conditionals</h3>
+      <pre>You have {score} {score == 1 | point | points}.
+{if has lamp}The lamp glows.{else}It is dark.{end}</pre>
+
+      <h3>Visits</h3>
+      <pre>if visits == 1:
+You arrive for the first time.
+else:
+You are back.
+end
+
+if visited village:
+You recognize the road.
+end</pre>
+
+      <h3>Randomness</h3>
+      <pre>[roll = random(1, 6)]
+if roll &gt;= 5:
+You succeed!
+end</pre>
+
+      <h3>Text</h3>
+      <p><code>*italic*</code> and <code>**bold**</code> in narration. <code>{variable}</code> to interpolate.</p>
+
+      <h3>Escaping</h3>
+      <p>A backslash before any character makes it literal, and the backslash itself is consumed.</p>
+      <pre>\-&gt;   \*   \?   \.   \~   \::   \@   \[   \]   \{   \}   \|   \\</pre>
+      <p>If the character after the backslash isn't special, the backslash is simply dropped:</p>
+      <pre>do\o\r      renders as  door
+\hello      renders as  hello
+\\         renders as  \</pre>
+
+      <h3>Comments</h3>
+      <p><code>// anything</code> on a line is ignored.</p>
+
+      <h3>Keyboard</h3>
+      <p>
+        <kbd>Ctrl</kbd><kbd>Enter</kbd> Run &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>P</kbd> Command palette &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>J</kbd> Toggle panel &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>B</kbd> Toggle sidebar<br>
+        <kbd>Ctrl</kbd><kbd>S</kbd> Save &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>O</kbd> Open &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>N</kbd> New &nbsp;·&nbsp;
+        <kbd>Tab</kbd> Indent &nbsp;·&nbsp;
+        <kbd>Esc</kbd> Close dialogs
+      </p>
+    </div>
+    <div class="dialog-foot">
+      <div class="spacer"></div>
+      <button class="btn primary" id="help-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="palette-overlay" id="palette-overlay" hidden>
+  <div class="palette">
+    <input id="palette-input" placeholder="Type a command…" autocomplete="off" spellcheck="false">
+    <div class="palette-list" id="palette-list"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════════════
+   ESCAPES
+   Backslash consumes the next char. Special chars become private-use
+   placeholders so the parser can't see them as syntax.
+   ═══════════════════════════════════════════════════════════════════ */
+const ESC_SET = '\\*?:@[]{}|>-~.';
+const ESC_TO_PH = {};
+const PH_TO_ESC = {};
+(function(){
+  for (let i = 0; i < ESC_SET.length; i++){
+    const ch = ESC_SET[i];
+    const ph = String.fromCharCode(0xE000 + i);
+    ESC_TO_PH[ch] = ph;
+    PH_TO_ESC[ph] = ch;
+  }
+})();
+
+function escapeLine(line){
+  return String(line).replace(/\\([\s\S]?)/g, function(_, ch){
+    if (ch === '' || ch === undefined) return '\\';
+    if (ESC_TO_PH[ch]) return ESC_TO_PH[ch];
+    return ch;
+  });
+}
+function unescapeText(text){
+  return String(text).replace(/[\uE000-\uE00D]/g, function(ch){
+    return PH_TO_ESC[ch] || ch;
+  });
+}
+function isEscapedStart(trimmed){
+  return trimmed.length > 0 && PH_TO_ESC[trimmed[0]] !== undefined;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PARSER
+   ═══════════════════════════════════════════════════════════════════ */
+const KNOWN_DIRECTIVES = {
+  title:1, author:1, start:1, set:1, var:1, list:1, seed:1, parser:1, format:1, typewriter:1
+};
+
+function parse(src){
+  const game = {
+    meta: {}, vars: {}, lists: {}, seed: null, parserMode: false,
+    typewriterEnabled: false, typewriterSpeed: 30,
+    passages: {}, order: [], errors: []
+  };
+  let cur = null;
+  const lines = String(src).split(/\r?\n/);
+
+  for (let i = 0; i < lines.length; i++){
+    const raw = lines[i];
+    const esc = escapeLine(raw);
+    const trimmed = esc.replace(/^\s+/, '');
+    if (!trimmed) continue;
+
+    const escapedStart = isEscapedStart(trimmed);
+
+    if (!escapedStart && trimmed.slice(0, 2) === '//') continue;
+
+    if (!escapedStart && trimmed[0] === '@'){
+      const m = trimmed.match(/^@(\w+)\s*([\s\S]*)$/);
+      if (!m){ game.errors.push({sev:'error', n:i+1, msg:'malformed directive'}); continue; }
+      const key = m[1].toLowerCase();
+      const val = m[2].trim();
+      if (!KNOWN_DIRECTIVES[key]){
+        game.errors.push({sev:'warn', n:i+1, msg:'unknown directive @' + m[1]});
+      }
+
+      if (key === 'set' || key === 'var'){
+        const eq = val.indexOf('=');
+        if (eq < 0){ game.errors.push({sev:'error', n:i+1, msg:'@set needs "name = value"'}); continue; }
+        const name = val.slice(0, eq).trim();
+        if (!/^[A-Za-z_]\w*$/.test(name)){
+          game.errors.push({sev:'error', n:i+1, msg:'@set: bad name "' + name + '"'}); continue;
+        }
+        try { game.vars[name] = evalExpr(val.slice(eq + 1), { vars: {}, lists: {} }); }
+        catch(e){ game.errors.push({sev:'error', n:i+1, msg:'@set: ' + e.message}); }
+      }
+      else if (key === 'list'){
+        if (!/^[A-Za-z_]\w*$/.test(val)){
+          game.errors.push({sev:'error', n:i+1, msg:'@list: bad name "' + val + '"'}); continue;
+        }
+        if (!(val in game.lists)) game.lists[val] = [];
+      }
+      else if (key === 'seed'){
+        const n = parseInt(val, 10);
+        if (isNaN(n)) game.errors.push({sev:'error', n:i+1, msg:'@seed needs a number'});
+        else game.seed = n;
+      }
+      else if (key === 'parser'){ game.parserMode = true; }
+      else if (key === 'typewriter'){
+        const v = val.toLowerCase();
+        if (v === 'off'){ game.typewriterEnabled = false; }
+        else {
+          game.typewriterEnabled = true;
+          if (v === 'fast') game.typewriterSpeed = 15;
+          else if (v === 'slow') game.typewriterSpeed = 60;
+          else if (/^\d+$/.test(v)) game.typewriterSpeed = Math.max(1, parseInt(v, 10));
+          else game.typewriterSpeed = 30;
+        }
+      }
+      else if (key === 'format'){ /* recognized */ }
+      else { game.meta[key] = val; }
+      continue;
+    }
+
+    if (!escapedStart && trimmed.slice(0, 2) === '::'){
+      const name = trimmed.slice(2).trim();
+      if (!name){ game.errors.push({sev:'error', n:i+1, msg:'passage needs a name'}); continue; }
+      if (!/^[A-Za-z0-9_-]+$/.test(name))
+        game.errors.push({sev:'warn', n:i+1, msg:'passage name "' + name + '" contains unusual characters'});
+      const key = name.toLowerCase();
+      if (game.passages[key])
+        game.errors.push({sev:'error', n:i+1, msg:'duplicate passage "' + name + '"'});
+      cur = { name: name, key: key, n: i+1, lines: [] };
+      game.passages[key] = cur;
+      game.order.push(cur);
+      continue;
+    }
+
+    if (!cur){
+      game.errors.push({sev:'error', n:i+1, msg:'content outside of any passage'});
+      continue;
+    }
+    cur.lines.push({ text: trimmed, raw: raw, n: i+1 });
+  }
+
+  if (!('inventory' in game.lists)) game.lists.inventory = [];
+  return game;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PROMPT / PAUSE / MODE LINE PARSERS
+   ═══════════════════════════════════════════════════════════════════ */
+const PROMPT_BARE_RE   = /^\?\s+([A-Za-z_]\w*)\s*(?:->\s*(\S+))?\s*$/;
+const PROMPT_INLINE_RE = /^\?\s+(.+?)(?:\s*\[([A-Za-z_]\w*)\])?\s*(?:->\s*(\S+))?\s*$/;
+const PAUSE_RE         = /^\.\.\.\s*(\d+(?:\.\d+)?)?\s*(ms|s)?\s*$/;
+const MODE_RE          = /^~(\w+)\s*$/;
+const MODES = { type:1, normal:1, fast:1, slow:1 };
+
+function parsePromptLine(text){
+  let m = text.match(PROMPT_BARE_RE);
+  if (m) return { prompt: null, varName: m[1], target: m[2] || null };
+  m = text.match(PROMPT_INLINE_RE);
+  if (m){
+    const prompt = m[1].trim();
+    if (!prompt) return null;
+    return { prompt: prompt, varName: m[2] || null, target: m[3] || null };
+  }
+  return null;
+}
+
+function parsePauseLine(text){
+  const m = text.match(PAUSE_RE);
+  if (!m) return null;
+  const n = m[1] ? parseFloat(m[1]) : 500;
+  const ms = m[2] === 's' ? n * 1000 : n;
+  return Math.max(0, Math.round(ms));
+}
+
+function parseModeLine(text){
+  const m = text.match(MODE_RE);
+  if (!m) return null;
+  const mode = m[1].toLowerCase();
+  return MODES[mode] ? mode : null;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EXPRESSION EVALUATOR
+   ═══════════════════════════════════════════════════════════════════ */
+const TOKEN_RE = /"[^"]*"|'[^']*'|\d+\.?\d*|[A-Za-z_]\w*|==|!=|<=|>=|&&|\|\||[!()<>+\-*/,]/g;
+
+function evalExpr(src, ctx){
+  ctx = ctx || {};
+  const vars    = ctx.vars || {};
+  const lists   = ctx.lists || {};
+  const visited = ctx.visited || new Set();
+  const extras  = ctx.extras || {};
+  const rng     = ctx.rng || Math.random;
+
+  const t = String(src).match(TOKEN_RE) || [];
+  let p = 0;
+  const peek = function(){ return t[p]; };
+  const eat  = function(x){ if (t[p] === x){ p++; return true; } return false; };
+
+  function primary(){
+    const tok = t[p];
+    if (tok === undefined) return 0;
+    if (tok === '('){ p++; const v = or_(); eat(')'); return v; }
+    if (tok === '!' || tok === 'not'){ p++; return !primary(); }
+    if (tok === '-'){ p++; return -primary(); }
+    if (tok === 'visited'){
+      p++;
+      const name = String(t[p++] || '').toLowerCase();
+      return visited.has(name);
+    }
+    if (tok === 'random'){
+      p++;
+      eat('(');
+      const lo = or_();
+      eat(',');
+      const hi = or_();
+      eat(')');
+      return Math.floor(rng() * (hi - lo + 1)) + lo;
+    }
+    if (tok === 'count'){
+      p++;
+      const name = t[p++];
+      const list = lists[name];
+      return list ? list.length : 0;
+    }
+    if (/^\d/.test(tok)){ p++; return parseFloat(tok); }
+    if (/^["']/.test(tok)){ p++; return tok.slice(1, -1); }
+    if (tok === 'true'){ p++; return true; }
+    if (tok === 'false'){ p++; return false; }
+    if (tok === 'inventory'){
+      p++;
+      return (lists.inventory || []).length;
+    }
+    p++;
+    if (extras[tok] !== undefined) return extras[tok];
+    return vars[tok] !== undefined ? vars[tok] : 0;
+  }
+  function mul(){
+    let l = primary();
+    for(;;){
+      const o = peek();
+      if (o === '*' || o === '/'){ p++; const r = primary(); l = o === '*' ? (+l)*(+r) : (+l)/(+r); }
+      else return l;
+    }
+  }
+  function add(){
+    let l = mul();
+    for(;;){
+      const o = peek();
+      if (o === '+' || o === '-'){
+        p++;
+        const r = mul();
+        if (typeof l === 'string' || typeof r === 'string'){
+          l = o === '+' ? String(l) + String(r) : (+l) - (+r);
+        } else {
+          l = o === '+' ? (+l) + (+r) : (+l) - (+r);
+        }
+      }
+      else return l;
+    }
+  }
+  function cmp(){
+    const l = add();
+    const o = peek();
+    if (o === '==' || o === '!=' || o === '<' || o === '<=' || o === '>' || o === '>='){
+      p++; const r = add();
+      return o === '==' ? l == r : o === '!=' ? l != r
+           : o === '<'  ? l <  r : o === '<=' ? l <= r
+           : o === '>'  ? l >  r : l >= r;
+    }
+    return l;
+  }
+  const and_ = function(){ let l = cmp(); while (peek() === 'and' || peek() === '&&'){ p++; l = l && cmp(); } return l; };
+  const or_  = function(){ let l = and_(); while (peek() === 'or' || peek() === '||'){ p++; l = l || and_(); } return l; };
+
+  return or_();
+}
+
+function evalCondition(src, ctx){
+  let s = String(src).trim();
+  if (!s) return true;
+  if (s.startsWith('not ')) return !evalCondition(s.slice(4), ctx);
+
+  const andParts = splitTopLevel(s, [' and ']);
+  if (andParts.length > 1) return andParts.every(function(p){ return evalCondition(p, ctx); });
+  const orParts = splitTopLevel(s, [' or ']);
+  if (orParts.length > 1) return orParts.some(function(p){ return evalCondition(p, ctx); });
+
+  const lists = ctx.lists || {};
+  let m;
+
+  if ((m = s.match(/^has\s+(no\s+)?(.+?)$/))){
+    const inv = lists.inventory || [];
+    const present = inv.indexOf(m[2].trim()) >= 0;
+    return m[1] ? !present : present;
+  }
+  if ((m = s.match(/^(\w+)\s+has\s+(no\s+)?(.+?)$/))){
+    const list = lists[m[1]] || [];
+    const present = list.indexOf(m[3].trim()) >= 0;
+    return m[2] ? !present : present;
+  }
+  return !!evalExpr(s, ctx);
+}
+
+function splitTopLevel(s, seps){
+  const parts = [];
+  let cur = '';
+  let depth = 0;
+  let i = 0;
+  outer: while (i < s.length){
+    const c = s[i];
+    if (c === '\\' && i + 1 < s.length){ cur += c + s[i+1]; i += 2; continue; }
+    if (c === '(' || c === '[' || c === '{'){ depth++; cur += c; i++; continue; }
+    if (c === ')' || c === ']' || c === '}'){ depth--; cur += c; i++; continue; }
+    if (depth === 0){
+      for (let k = 0; k < seps.length; k++){
+        const sep = seps[k];
+        if (s.slice(i, i + sep.length) === sep){
+          parts.push(cur); cur = ''; i += sep.length; continue outer;
+        }
+      }
+    }
+    cur += c;
+    i++;
+  }
+  parts.push(cur);
+  return parts;
+}
+
+function interp(s, ctx){
+  s = String(s);
+  s = s.replace(
+    /\{if\s+([^{}]+)\}([^{}]*)(?:\{else\}([^{}]*))?\{end\}/g,
+    function(_, cond, yes, no){
+      try { return evalCondition(cond.trim(), ctx) ? yes : (no || ''); }
+      catch(e){ return ''; }
+    }
+  );
+  s = s.replace(/\{([^{}]*)\}/g, function(_, inner){
+    return expandInterp(inner.trim(), ctx);
+  });
+  return s;
+}
+
+function expandInterp(inner, ctx){
+  if (!inner) return '';
+  const lists  = ctx.lists || {};
+  const visits = ctx.visits || {};
+  let m;
+
+  if ((m = inner.match(/^count\s+(\w+)$/))){
+    const list = lists[m[1]];
+    return list ? String(list.length) : '0';
+  }
+  if (inner === 'inventory'){
+    return (lists.inventory || []).join(', ');
+  }
+  if (inner === 'visits'){
+    return String(visits[ctx.currentPassage] || 0);
+  }
+  const parts = splitTopLevel(inner, ['|']);
+  if (parts.length === 3){
+    let cond;
+    try { cond = evalExpr(parts[0].trim(), ctx); }
+    catch(e){ cond = 0; }
+    return cond ? interp(parts[1].trim(), ctx) : interp(parts[2].trim(), ctx);
+  }
+  if (/^[A-Za-z_]\w*$/.test(inner)){
+    const extras = ctx.extras || {};
+    if (extras[inner] !== undefined) return String(extras[inner]);
+    const v = (ctx.vars || {})[inner];
+    return v !== undefined ? String(v) : '';
+  }
+  try {
+    const v = evalExpr(inner, ctx);
+    return v === undefined ? '' : String(v);
+  } catch(e){ return ''; }
+}
+
+function applyEffects(src, ctx){
+  const vars  = ctx.vars || (ctx.vars = {});
+  const lists = ctx.lists || (ctx.lists = {});
+  const parts = splitTopLevel(String(src), [',', ';']);
+
+  for (let i = 0; i < parts.length; i++){
+    const e = parts[i].trim();
+    if (!e) continue;
+    let m;
+
+    if ((m = e.match(/^get\s+(.+?)$/))){
+      const item = m[1].trim();
+      lists.inventory = lists.inventory || [];
+      if (item && lists.inventory.indexOf(item) < 0) lists.inventory.push(item);
+      continue;
+    }
+    if ((m = e.match(/^drop\s+(.+?)$/))){
+      const item = m[1].trim();
+      const inv = lists.inventory || [];
+      const idx = inv.indexOf(item);
+      if (idx >= 0) inv.splice(idx, 1);
+      continue;
+    }
+    if (e === 'clear inventory'){
+      if (lists.inventory) lists.inventory.length = 0;
+      continue;
+    }
+    if ((m = e.match(/^(\w+)\s+add\s+(.+?)$/))){
+      const name = m[1], item = m[2].trim();
+      if (lists[name] && item && lists[name].indexOf(item) < 0) lists[name].push(item);
+      continue;
+    }
+    if ((m = e.match(/^(\w+)\s+remove\s+(.+?)$/))){
+      const name = m[1], item = m[2].trim();
+      if (lists[name]){
+        const idx = lists[name].indexOf(item);
+        if (idx >= 0) lists[name].splice(idx, 1);
+      }
+      continue;
+    }
+    if ((m = e.match(/^(\w+)\s+clear$/))){
+      const name = m[1];
+      if (lists[name]) lists[name].length = 0;
+      continue;
+    }
+    if ((m = e.match(/^([A-Za-z_]\w*)\s*\+=\s*([\s\S]+)$/)))
+      vars[m[1]] = (+vars[m[1]] || 0) + (+evalExpr(m[2], ctx) || 0);
+    else if ((m = e.match(/^([A-Za-z_]\w*)\s*-=\s*([\s\S]+)$/)))
+      vars[m[1]] = (+vars[m[1]] || 0) - (+evalExpr(m[2], ctx) || 0);
+    else if ((m = e.match(/^([A-Za-z_]\w*)\s*\*=\s*([\s\S]+)$/)))
+      vars[m[1]] = (+vars[m[1]] || 0) * (+evalExpr(m[2], ctx) || 0);
+    else if ((m = e.match(/^([A-Za-z_]\w*)\s*\+\+$/)))
+      vars[m[1]] = (+vars[m[1]] || 0) + 1;
+    else if ((m = e.match(/^([A-Za-z_]\w*)\s*--$/)))
+      vars[m[1]] = (+vars[m[1]] || 0) - 1;
+    else if ((m = e.match(/^([A-Za-z_]\w*)\s*=\s*([\s\S]+)$/)))
+      vars[m[1]] = evalExpr(m[2], ctx);
+  }
+}
+
+function parseChoice(line, ctx){
+  let s = line.slice(1).trim();
+  let label = s, target = null, effects = '';
+
+  const arrow = s.indexOf('->');
+  if (arrow >= 0){
+    label = s.slice(0, arrow).trim();
+    const rest = s.slice(arrow + 2).trim();
+    const ob = rest.indexOf('[');
+    if (ob >= 0 && rest.endsWith(']')){
+      target = rest.slice(0, ob).trim();
+      effects = rest.slice(ob + 1, -1).trim();
+    } else target = rest;
+  } else {
+    const ob = s.indexOf('[');
+    if (ob >= 0 && s.endsWith(']')){
+      label = s.slice(0, ob).trim();
+      effects = s.slice(ob + 1, -1).trim();
+    }
+  }
+  if (!label) return null;
+
+  const alias = label.split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+  return {
+    label: unescapeText(interp(label, ctx)),
+    alias: alias,
+    target: target,
+    effects: effects
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RUNTIME
+   ═══════════════════════════════════════════════════════════════════ */
+function Interp(game, opts){
+  opts = opts || {};
+  this.game = game;
+  this.vars = Object.assign({}, game.vars);
+  this.lists = {};
+  for (const k in game.lists) this.lists[k] = game.lists[k].slice();
+  this.visited = new Set();
+  this.visits = {};
+  this.passage = null;
+  this.steps = 0;
+  this._lastPassage = null;
+  this.typewriter = !!game.typewriterEnabled;
+  this.typewriterSpeed = game.typewriterSpeed || 30;
+  this.skipEffects = !!opts.skipEffects;
+
+  this.rngState = (game.seed != null)
+    ? (game.seed | 0)
+    : ((Date.now() ^ (Math.random() * 0x7fffffff)) & 0x7fffffff);
+}
+
+Interp.prototype._rng = function(){
+  this.rngState = (Math.imul(this.rngState, 1103515245) + 12345) & 0x7fffffff;
+  return this.rngState / 0x7fffffff;
+};
+
+Interp.prototype.ctx = function(){
+  const self = this;
+  return {
+    vars: self.vars,
+    lists: self.lists,
+    visited: self.visited,
+    visits: self.visits,
+    currentPassage: self.passage,
+    extras: { visits: self.visits[self.passage] || 0 },
+    rng: function(){ return self._rng(); }
+  };
+};
+
+Interp.prototype.run = function*(){
+  const g = this.game;
+  let cur = (g.meta.start || (g.order[0] && g.order[0].key) || '').toLowerCase();
+  if (!cur){ yield { type:'error', text:'no passages defined' }; return; }
+
+  for(;;){
+    if (++this.steps > 500000){ yield { type:'error', text:'step limit exceeded' }; return; }
+    const pass = g.passages[cur];
+    if (!pass){ yield { type:'error', text:'missing passage: "' + cur + '"' }; return; }
+    this.passage = cur;
+
+    if (cur !== this._lastPassage){
+      this.visited.add(cur);
+      this.visits[cur] = (this.visits[cur] || 0) + 1;
+    }
+    this._lastPassage = cur;
+
+    const ctx = this.ctx();
+    const choices = [];
+    const stack = [];
+    let jump = null;
+    const live = function(){
+      if (!stack.length) return true;
+      const top = stack[stack.length - 1];
+      return top.parentLive && top.taken;
+    };
+
+    for (let li = 0; li < pass.lines.length; li++){
+      const item = pass.lines[li];
+      const t = item.text;
+
+      if (t.startsWith('if ') && t.endsWith(':')){
+        const isLive = live();
+        const cond = isLive && !!evalCondition(t.slice(3, -1).trim(), ctx);
+        stack.push({ parentLive: isLive, taken: cond });
+        continue;
+      }
+      if (t === 'else:'){
+        if (!stack.length){ yield { type:'error', text:'line ' + item.n + ': else without if' }; return; }
+        const top = stack[stack.length - 1];
+        if (top.parentLive) top.taken = !top.taken;
+        continue;
+      }
+      if (t === 'end'){
+        if (!stack.length){ yield { type:'error', text:'line ' + item.n + ': end without if' }; return; }
+        stack.pop();
+        continue;
+      }
+      if (!live()) continue;
+
+      // ---- PAUSE ----
+      const pauseMs = parsePauseLine(t);
+      if (pauseMs !== null){
+        if (!this.skipEffects && pauseMs > 0){
+          yield { type:'pause', ms: pauseMs };
+        }
+        continue;
+      }
+
+      // ---- MODE TOGGLE ----
+      const mode = parseModeLine(t);
+      if (mode){
+        if (mode === 'type'){ this.typewriter = true; }
+        else if (mode === 'normal'){ this.typewriter = false; }
+        else if (mode === 'fast'){ this.typewriter = true; this.typewriterSpeed = 15; }
+        else if (mode === 'slow'){ this.typewriter = true; this.typewriterSpeed = 60; }
+        continue;
+      }
+
+      // ---- PLAYER INPUT ----
+      if (t[0] === '?'){
+        const spec = parsePromptLine(t);
+        if (!spec){
+          yield { type:'error', text:'line ' + item.n + ': malformed ? directive' };
+          return;
+        }
+        if (spec.prompt){
+          const rendered = unescapeText(interp(spec.prompt, ctx));
+          yield { type:'text', text: rendered, style: 'prompt' };
+        }
+        const input = yield { type:'input', varName: spec.varName, prompt: spec.prompt };
+
+        if (spec.varName){
+          const trimmed = String(input == null ? '' : input).trim();
+          const num = Number(trimmed);
+          this.vars[spec.varName] = (trimmed !== '' && !isNaN(num) && /^-?\d+(\.\d+)?$/.test(trimmed))
+            ? num : trimmed;
+        }
+        if (spec.target){
+          if (spec.target.toUpperCase() === 'END'){ yield { type:'end' }; return; }
+          jump = spec.target;
+          break;
+        }
+        continue;
+      }
+
+      // ---- CHOICES ----
+      if (t[0] === '*'){
+        const c = parseChoice(t, ctx);
+        if (!c){ yield { type:'error', text:'line ' + item.n + ': malformed choice' }; return; }
+        choices.push(c);
+        continue;
+      }
+
+      // ---- SILENT JUMP ----
+      if (t.slice(0,2) === '->'){
+        jump = t.slice(2).trim();
+        break;
+      }
+
+      // ---- STANDALONE EFFECT ----
+      if (t[0] === '[' && t.endsWith(']')){
+        applyEffects(t.slice(1, -1), ctx);
+        continue;
+      }
+
+      // ---- NARRATION ----
+      yield {
+        type: 'text',
+        text: unescapeText(interp(t, ctx)),
+        typewriter: this.typewriter && !this.skipEffects,
+        speed: this.typewriterSpeed
+      };
+    }
+
+    if (jump !== null){
+      if (jump.toUpperCase() === 'END'){ yield { type:'end' }; return; }
+      cur = jump.toLowerCase();
+      continue;
+    }
+    if (!choices.length){ yield { type:'end' }; return; }
+
+    const i = yield {
+      type: 'choice',
+      choices: choices,
+      passage: cur,
+      parserMode: g.parserMode
+    };
+    const c = choices[i];
+    if (c.effects) applyEffects(c.effects, ctx);
+    if (c.target){
+      if (c.target.toUpperCase() === 'END'){ yield { type:'end' }; return; }
+      cur = c.target.toLowerCase();
+    } else {
+      continue;
+    }
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   LINTER
+   ═══════════════════════════════════════════════════════════════════ */
+function lint(game){
+  const out = game.errors.slice();
+  const startKey = (game.meta.start || '').toLowerCase();
+
+  if (!startKey){
+    out.push({ sev:'warn', n:1, msg:'no @start directive — using the first passage' });
+  } else if (!game.passages[startKey]){
+    out.push({ sev:'error', n:1, msg:'@start passage "' + game.meta.start + '" doesn\'t exist' });
+  }
+
+  const edges = new Map();
+  const declared = new Set(Object.keys(game.vars));
+  const listNames = new Set(Object.keys(game.lists));
+  const PSEUDO = {
+    visits:1, inventory:1, true:1, false:1, not:1, and:1, or:1,
+    random:1, visited:1, count:1, has:1, no:1, get:1, drop:1,
+    add:1, remove:1, clear:1
+  };
+  const used = new Set();
+
+  for (let pi = 0; pi < game.order.length; pi++){
+    const p = game.order[pi];
+    const condStack = [];
+    const fromP = new Set();
+
+    for (let li = 0; li < p.lines.length; li++){
+      const item = p.lines[li];
+      const t = item.text;
+
+      if (t.startsWith('if ') && t.endsWith(':')){
+        condStack.push(true);
+        const ids = t.slice(3, -1).match(/[A-Za-z_]\w*/g) || [];
+        for (let k = 0; k < ids.length; k++) used.add(ids[k]);
+        continue;
+      }
+      if (t === 'else:'){
+        if (!condStack.length) out.push({ sev:'error', n:item.n, msg:'else without a matching if' });
+        continue;
+      }
+      if (t === 'end'){
+        if (!condStack.length) out.push({ sev:'error', n:item.n, msg:'end without a matching if' });
+        else condStack.pop();
+        continue;
+      }
+
+      // pause / mode — no targets, no vars
+      if (parsePauseLine(t) !== null) continue;
+      if (parseModeLine(t)) continue;
+
+      if (t[0] === '?'){
+        const spec = parsePromptLine(t);
+        if (!spec) out.push({ sev:'error', n:item.n, msg:'malformed ? directive' });
+        else {
+          if (spec.varName) declared.add(spec.varName);
+          if (spec.target && spec.target.toUpperCase() !== 'END') fromP.add(spec.target.toLowerCase());
+        }
+        continue;
+      }
+
+      if (t.slice(0,2) === '->'){
+        const target = t.slice(2).trim();
+        if (target && target.toUpperCase() !== 'END') fromP.add(target.toLowerCase());
+        continue;
+      }
+
+      if (t[0] === '*'){
+        const arrow = t.indexOf('->');
+        if (arrow < 0){
+          const ob = t.indexOf('[');
+          if (ob >= 0 && t.endsWith(']')){
+            const eff = t.slice(ob + 1, -1);
+            for (const id of (eff.match(/[A-Za-z_]\w*/g) || [])) used.add(id);
+          }
+          for (const v of (t.match(/\{(\w+)\}/g) || [])) used.add(v.slice(1, -1));
+          continue;
+        }
+        const rest = t.slice(arrow + 2).trim();
+        const ob = rest.indexOf('[');
+        const target = (ob >= 0 ? rest.slice(0, ob) : rest).trim();
+        if (!target) out.push({ sev:'error', n:item.n, msg:'choice has an empty target' });
+        else if (target.toUpperCase() !== 'END') fromP.add(target.toLowerCase());
+        const labelPart = t.slice(0, arrow);
+        for (const v of (labelPart.match(/\{(\w+)\}/g) || [])) used.add(v.slice(1, -1));
+        if (ob >= 0 && rest.endsWith(']')){
+          const eff = rest.slice(ob + 1, -1);
+          const stripped = eff
+            .replace(/^get\s+/, '')
+            .replace(/^drop\s+/, '')
+            .replace(/^clear\s+inventory$/, '')
+            .replace(/^\w+\s+add\s+/, '')
+            .replace(/^\w+\s+remove\s+/, '')
+            .replace(/^\w+\s+clear$/, '');
+          for (const id of (stripped.match(/[A-Za-z_]\w*/g) || [])) used.add(id);
+        }
+        continue;
+      }
+
+      if (t[0] === '[' && t.endsWith(']')){
+        const eff = t.slice(1, -1);
+        const stripped = eff
+          .replace(/^get\s+/, '')
+          .replace(/^drop\s+/, '')
+          .replace(/^clear\s+inventory$/, '')
+          .replace(/^\w+\s+add\s+/, '')
+          .replace(/^\w+\s+remove\s+/, '')
+          .replace(/^\w+\s+clear$/, '');
+        for (const id of (stripped.match(/[A-Za-z_]\w*/g) || [])) used.add(id);
+        continue;
+      }
+
+      for (const v of (t.match(/\{(\w+)\}/g) || [])) used.add(v.slice(1, -1));
+    }
+
+    if (condStack.length)
+      out.push({ sev:'error', n:p.n, msg:'passage "' + p.name + '" has ' + condStack.length + ' unclosed if block(s)' });
+    edges.set(p.key, fromP);
+  }
+
+  for (const [from, targets] of edges){
+    for (const t of targets){
+      if (!game.passages[t]){
+        const pass = game.passages[from];
+        out.push({ sev:'error', n: pass.n, msg:'"' + pass.name + '" links to missing passage "' + t + '"' });
+      }
+    }
+  }
+
+  const root = startKey || (game.order[0] && game.order[0].key);
+  if (root){
+    const seen = new Set();
+    const stack = [root];
+    while (stack.length){
+      const k = stack.pop();
+      if (seen.has(k) || !game.passages[k]) continue;
+      seen.add(k);
+      for (const t of (edges.get(k) || [])) stack.push(t);
+    }
+    for (const p of game.order){
+      if (!seen.has(p.key))
+        out.push({ sev:'warn', n:p.n, msg:'passage "' + p.name + '" is unreachable from @start' });
+    }
+  }
+
+  for (const v of used){
+    if (!declared.has(v) && !PSEUDO[v] && !listNames.has(v))
+      out.push({ sev:'warn', n:1, msg:'variable "' + v + '" is used but never declared with @set' });
+  }
+
+  out.sort(function(a, b){ return a.n - b.n || (a.sev === 'error' ? -1 : 1); });
+  return out;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATIC HIGHLIGHTER
+   ═══════════════════════════════════════════════════════════════════ */
+function esc(s){
+  return String(s).replace(/[&<>]/g, function(c){
+    return c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;';
+  });
+}
+function hlText(raw){
+  return esc(raw).replace(/\{(\w+)\}/g, '<span class="tx-var">{$1}</span>');
+}
+function highlight(src){
+  return String(src).split('\n').map(function(line){
+    if (line.trim().startsWith('//')) return '<span style="color:var(--syn-comment)">' + esc(line) + '</span>';
+    return hlText(line);
+  }).join('\n');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIRROR — tgame simple mode
+   ═══════════════════════════════════════════════════════════════════ */
+if (typeof CodeMirror !== 'undefined'){
+  CodeMirror.defineSimpleMode('tgame', {
+    start: [
+      { regex: /\/\/.*/, token: 'comment' },
+      { regex: /(@set)(\s+)([A-Za-z_]\w*)/, token: ['keyword', null, 'variable-2'], sol: true },
+      { regex: /(@list)(\s+)([A-Za-z_]\w*)/, token: ['keyword', null, 'def'], sol: true },
+      { regex: /@\w+/, token: 'keyword', sol: true },
+      { regex: /(::)(\s*)([A-Za-z0-9_-]+)/, token: ['keyword', null, 'def'], sol: true },
+      { regex: /^\s*\.\.\.(\s|$).*$/, token: 'atom', sol: true },
+      { regex: /^\s*~\w+\s*$/, token: 'atom', sol: true },
+      { regex: /\s*\*\s*/, token: 'keyword', sol: true },
+      { regex: /(\?)(\s+)/, token: ['keyword', null], sol: true },
+      { regex: /\[([A-Za-z_]\w*)\]\s*(?=$|->)/, token: 'variable-2' },
+      { regex: /\s*(->)/, token: 'keyword', sol: true },
+      { regex: /\[[^\]]*\]/, token: 'meta', sol: true },
+      { regex: /\s*(if)\b/, token: 'keyword', sol: true },
+      { regex: /\s*(else:)/, token: 'keyword', sol: true },
+      { regex: /\s*(end)\s*$/, token: 'keyword', sol: true },
+      { regex: /\b(has|no|not|and|or)\b/, token: 'keyword' },
+      { regex: /\b(get|drop|add|remove|clear)\b/, token: 'keyword' },
+      { regex: /\b(visited|visits|inventory|random|count)\b/, token: 'atom' },
+      { regex: /\{(\w+)\}/, token: 'variable-2' },
+      { regex: /->/, token: 'keyword' },
+      { regex: /\[[^\]]*\]/, token: 'meta' },
+      { regex: /\b(true|false)\b/, token: 'atom' },
+      { regex: /\b\d+\.?\d*\b/, token: 'number' },
+    ]
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════════ */
+const $ = function(id){ return document.getElementById(id); };
+const app       = $('app');
+const outEl     = $('out');
+const choicesEl = $('choices');
+const cmdForm   = $('cmd-form');
+const cmdEl     = $('cmd');
+
+let cm              = null;
+let currentText     = '';
+let lastGame        = null;
+let lastProblems    = [];
+let currentPassage  = null;
+let errorLines      = new Set();
+let fileName        = 'untitled.tgame';
+let currentActivity = 'story';
+let sidebarHidden   = false;
+let runGeneration   = 0;
+let startVarsRef    = null;
+let startListsRef   = null;
+let passageFilter   = '';
+let awaitingInput   = null;
+let activeTypewriter = null;
+
+/* ═══════════════════════════════════════════════════════════════════
+   EDITOR
+   ═══════════════════════════════════════════════════════════════════ */
+function initEditor(){
+  const placeholder = $('editor-placeholder');
+  if (typeof CodeMirror === 'undefined'){
+    placeholder.textContent = 'Could not load CodeMirror from CDN — check your internet connection.';
+    return;
+  }
+  placeholder.style.display = 'none';
+
+  cm = CodeMirror.fromTextArea($('src'), {
+    mode: 'tgame',
+    lineNumbers: true,
+    lineWrapping: false,
+    indentUnit: 2,
+    tabSize: 2,
+    indentWithTabs: false,
+    viewportMargin: 10,
+    autofocus: true,
+    extraKeys: {
+      'Tab': function(instance){ instance.replaceSelection('  ', 'end'); },
+      'Shift-Tab': function(instance){
+        const cur = instance.getCursor();
+        const line = instance.getLine(cur.line);
+        const strip = line.match(/^ {1,2}/);
+        if (strip) instance.replaceRange('', {line: cur.line, ch: 0}, {line: cur.line, ch: strip[0].length});
+      }
+    }
+  });
+
+  cm.on('change', onEdit);
+  cm.on('cursorActivity', updateStatusPosition);
+  cm.on('focus', updateStatusPosition);
+  setTimeout(function(){ cm.refresh(); }, 0);
+}
+
+function onEdit(){
+  currentText = cm.getValue();
+  updateStatusPosition();
+  updateBreadcrumbs();
+  markDirty();
+  updateStats();
+  scheduleLint();
+  scheduleAutosave();
+  if ($('auto-run').checked) scheduleRun();
+}
+
+function updateStatusPosition(){
+  if (!cm) return;
+  const pos = cm.getCursor();
+  $('st-position').textContent = 'Ln ' + (pos.line + 1) + ', Col ' + (pos.ch + 1);
+}
+
+function applyErrorMarkers(){
+  if (!cm) return;
+  cm.operation(function(){
+    for (let i = 0; i < cm.lineCount(); i++){
+      cm.removeLineClass(i, 'background', 'cm-error-line');
+      cm.removeLineClass(i, 'gutter', 'cm-error-gutter');
+    }
+    errorLines.forEach(function(n){
+      if (n >= 1 && n <= cm.lineCount()){
+        cm.addLineClass(n - 1, 'background', 'cm-error-line');
+        cm.addLineClass(n - 1, 'gutter', 'cm-error-gutter');
+      }
+    });
+  });
+}
+
+function jumpToLine(n){
+  if (!cm) return;
+  cm.setCursor({ line: n - 1, ch: 0 });
+  cm.scrollIntoView({ line: n - 1, ch: 0 }, 120);
+  cm.focus();
+}
+
+function applySource(text){
+  if (!cm) return;
+  currentText = text;
+  cm.setValue(text);
+  cm.clearHistory();
+  cm.setCursor({ line: 0, ch: 0 });
+  cm.refresh();
+  updateStatusPosition();
+  updateStats();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BREADCRUMBS / DIRTY / STATS
+   ═══════════════════════════════════════════════════════════════════ */
+function updateBreadcrumbs(){
+  const bc = $('breadcrumbs');
+  let html = '<span class="crumb">' + esc(fileName) + '</span>';
+  if (currentPassage && lastGame){
+    const p = lastGame.passages[currentPassage];
+    if (p) html += '<span class="sep">›</span><span class="crumb last active">' + esc(p.name) + '</span>';
+  }
+  bc.innerHTML = html;
+}
+function markDirty(){ $('file-tab').classList.add('dirty'); }
+function clearDirty(){ $('file-tab').classList.remove('dirty'); }
+function updateStats(){
+  const words = currentText.split(/\s+/).filter(Boolean).length;
+  const game = lastGame || { order: [] };
+  $('st-stats').textContent =
+    game.order.length + ' passage' + (game.order.length === 1 ? '' : 's') +
+    ' · ' + words.toLocaleString() + ' words';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PLAY — output + typewriter
+   ═══════════════════════════════════════════════════════════════════ */
+function fmtHTML(text){
+  let h = esc(text);
+  h = h.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  return h;
+}
+
+function outPrint(text, cls){
+  const p = document.createElement('p');
+  if (cls) p.className = cls;
+  if (cls === 'echo' || cls === 'err' || cls === 'sys'){
+    p.textContent = text;
+  } else {
+    p.innerHTML = fmtHTML(text);
+  }
+  outEl.appendChild(p);
+  outEl.scrollTop = outEl.scrollHeight;
+  return p;
+}
+
+/* Progressive reveal. Wraps each character in a hidden span and
+   reveals them one at a time. Clicking anywhere in the output
+   finishes the current paragraph instantly. */
+function typewriterPrint(text, speed, done){
+  const p = outPrint(text);
+  p.classList.add('tw');
+
+  // Collect all text nodes, replace each with a sequence of hidden spans
+  const chars = [];
+  const textNodes = [];
+  const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  while ((node = walker.nextNode())) textNodes.push(node);
+
+  for (let i = 0; i < textNodes.length; i++){
+    const tn = textNodes[i];
+    const frag = document.createDocumentFragment();
+    const value = tn.nodeValue;
+    for (let j = 0; j < value.length; j++){
+      const span = document.createElement('span');
+      span.textContent = value[j];
+      span.style.visibility = 'hidden';
+      frag.appendChild(span);
+      chars.push(span);
+    }
+    tn.parentNode.replaceChild(frag, tn);
+  }
+
+  let i = 0;
+  let finished = false;
+  let timer = null;
+
+  function finish(){
+    if (finished) return;
+    finished = true;
+    if (timer) clearInterval(timer);
+    for (let k = i; k < chars.length; k++) chars[k].style.visibility = 'visible';
+    outEl.removeEventListener('click', onSkip);
+    activeTypewriter = null;
+    if (done) done();
+  }
+  function onSkip(e){ finish(); }
+
+  timer = setInterval(function(){
+    if (i >= chars.length){ finish(); return; }
+    chars[i].style.visibility = 'visible';
+    i++;
+    outEl.scrollTop = outEl.scrollHeight;
+  }, Math.max(1, speed));
+
+  outEl.addEventListener('click', onSkip);
+  activeTypewriter = { finish: finish };
+}
+
+function clearPlay(){
+  if (activeTypewriter){ activeTypewriter.finish(); activeTypewriter = null; }
+  outEl.innerHTML = '';
+  choicesEl.innerHTML = '';
+  cmdForm.classList.remove('hidden');
+  cmdForm.classList.remove('awaiting');
+  cmdEl.value = '';
+  currentPassage = null;
+  awaitingInput = null;
+}
+
+function renderChoices(choices, onPick, parserMode){
+  choicesEl.innerHTML = '';
+  if (parserMode){
+    cmdEl.placeholder = 'type a command (try "help")…';
+    cmdEl.focus({ preventScroll: true });
+    return;
+  }
+  choices.forEach(function(c, i){
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.innerHTML = '<span class="num">' + (i + 1) + '.</span><span>' + esc(c.label) + '</span>';
+    b.onclick = function(){ onPick(i, c.label); };
+    li.appendChild(b);
+    choicesEl.appendChild(li);
+  });
+  cmdEl.placeholder = 'type a command or number…';
+  const ae = document.activeElement;
+  const typing = ae && ae !== cmdEl && (
+    ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable
+  );
+  if (!typing) cmdEl.focus({ preventScroll: true });
+}
+
+function runGame(opts){
+  opts = opts || {};
+  const skipEffects = !!opts.skipEffects;
+  const myGen = ++runGeneration;
+  clearPlay();
+
+  let game, problems;
+  try {
+    game = parse(currentText);
+    problems = lint(game);
+  } catch(e){
+    outPrint('parse failure: ' + e.message, 'err');
+    return;
+  }
+  lastGame = game;
+  lastProblems = problems;
+  renderSidebar(game, problems);
+  updateStats();
+
+  const errors = problems.filter(function(p){ return p.sev === 'error'; });
+  if (errors.length){
+    outPrint(errors.length + ' error' + (errors.length > 1 ? 's' : '')
+           + '. Check the Problems view.', 'err');
+    return;
+  }
+
+  const interp = new Interp(game, { skipEffects: skipEffects });
+  startVarsRef  = Object.assign({}, interp.vars);
+  startListsRef = {};
+  for (const k in interp.lists) startListsRef[k] = interp.lists[k].slice();
+
+  const gen = interp.run();
+
+  function finish(){
+    outPrint('— The End —', 'end');
+    cmdForm.classList.add('hidden');
+    choicesEl.innerHTML = '';
+    currentPassage = null;
+    awaitingInput = null;
+    updateBreadcrumbs();
+    renderVars(interp);
+  }
+
+  function pump(input){
+    if (myGen !== runGeneration) return;
+    let r;
+    try { r = gen.next(input); }
+    catch(e){ outPrint('runtime error: ' + e.message, 'err'); return; }
+
+    function handleNext(){
+      for(;;){
+        if (myGen !== runGeneration) return;
+        if (r.done){ finish(); return; }
+        const v = r.value;
+
+        if (v.type === 'text'){
+          if (v.typewriter){
+            const speed = v.speed || 30;
+            typewriterPrint(v.text, speed, function(){
+              r = gen.next();
+              handleNext();
+            });
+            return;
+          }
+          outPrint(v.text, v.style === 'prompt' ? 'prompt' : undefined);
+          r = gen.next();
+          continue;
+        }
+
+        if (v.type === 'pause'){
+          const ms = v.ms;
+          setTimeout(function(){
+            if (myGen !== runGeneration) return;
+            r = gen.next();
+            handleNext();
+          }, ms);
+          return;
+        }
+
+        if (v.type === 'end'){ finish(); return; }
+        if (v.type === 'error'){ outPrint('*** ' + v.text, 'err'); finish(); return; }
+        if (v.type === 'input'){
+          cmdForm.classList.add('awaiting');
+          cmdEl.placeholder = 'type your answer…';
+          cmdEl.value = '';
+          cmdEl.focus();
+          awaitingInput = {
+            varName: v.varName,
+            submit: function(answer){ pump(answer); }
+          };
+          return;
+        }
+        if (v.type === 'choice'){
+          currentPassage = interp.passage;
+          updateBreadcrumbs();
+          highlightInSidebar(interp.passage);
+          renderVars(interp);
+          renderChoices(v.choices, function(i, label){
+            outPrint('> ' + label, 'echo');
+            choicesEl.innerHTML = '';
+            pump(i);
+          }, v.parserMode);
+          return;
+        }
+        r = gen.next();
+      }
+    }
+    handleNext();
+  }
+
+  pump();
+}
+
+function showHelp(){
+  const btns = choicesEl.querySelectorAll('button');
+  if (!btns.length){
+    outPrint("I don't see any commands here.", 'sys');
+    return;
+  }
+  outPrint('Commands available here:', 'sys');
+  btns.forEach(function(b){
+    const label = b.textContent.replace(/^\d+\.\s*/, '');
+    const alias = label.split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+    outPrint('  ' + alias + '  —  ' + label, 'sys');
+  });
+}
+
+cmdForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  // If a typewriter paragraph is running, finish it on submit too
+  if (activeTypewriter){ activeTypewriter.finish(); }
+
+  const v = cmdEl.value;
+  const trimmed = v.trim();
+
+  if (awaitingInput){
+    const submit = awaitingInput.submit;
+    awaitingInput = null;
+    cmdForm.classList.remove('awaiting');
+    cmdEl.value = '';
+    cmdEl.placeholder = 'type a command or number…';
+    outPrint('> ' + v, 'echo');
+    submit(v);
+    return;
+  }
+
+  if (!trimmed) return;
+  const low = trimmed.toLowerCase();
+
+  if (low === 'help' || low === '?'){
+    showHelp();
+    cmdEl.value = '';
+    return;
+  }
+
+  const btns = choicesEl.querySelectorAll('button');
+  let pick = -1;
+  if (/^\d+$/.test(trimmed)){
+    pick = parseInt(trimmed, 10) - 1;
+  } else {
+    for (let i = 0; i < btns.length; i++){
+      const label = btns[i].textContent.replace(/^\d+\.\s*/, '').toLowerCase();
+      const first = label.split(/\s+/)[0].replace(/[^a-z0-9]/g, '');
+      if (label === low || first === low){ pick = i; break; }
+    }
+  }
+  if (pick >= 0 && pick < btns.length){
+    cmdEl.value = '';
+    btns[pick].click();
+  } else {
+    outPrint("I don't understand \"" + trimmed + "\".", 'sys');
+    cmdEl.value = '';
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════════════════ */
+function buildEdges(game){
+  const edges = new Map();
+  for (let pi = 0; pi < game.order.length; pi++){
+    const p = game.order[pi];
+    const targets = new Set();
+    for (let li = 0; li < p.lines.length; li++){
+      const t = p.lines[li].text;
+      if (t.slice(0,2) === '->'){
+        const target = t.slice(2).trim().toLowerCase();
+        if (target && target !== 'end') targets.add(target);
+      }
+      if (t[0] === '?'){
+        const spec = parsePromptLine(t);
+        if (spec && spec.target && spec.target.toUpperCase() !== 'END')
+          targets.add(spec.target.toLowerCase());
+      }
+      if (t[0] === '*'){
+        const arrow = t.indexOf('->');
+        if (arrow < 0) continue;
+        const rest = t.slice(arrow + 2).trim();
+        const ob = rest.indexOf('[');
+        const target = (ob >= 0 ? rest.slice(0, ob) : rest).trim().toLowerCase();
+        if (target && target !== 'end') targets.add(target);
+      }
+    }
+    edges.set(p.key, targets);
+  }
+  return edges;
+}
+function isEnding(passage){
+  for (let i = 0; i < passage.lines.length; i++){
+    const t = passage.lines[i].text;
+    if (t.slice(0,2) === '->' && t.slice(2).trim().toUpperCase() === 'END') return true;
+    if (t[0] === '?'){
+      const spec = parsePromptLine(t);
+      if (spec && spec.target && spec.target.toUpperCase() === 'END') return true;
+    }
+    if (t[0] === '*'){
+      const arrow = t.indexOf('->');
+      if (arrow < 0) continue;
+      const rest = t.slice(arrow + 2).trim();
+      const ob = rest.indexOf('[');
+      const target = (ob >= 0 ? rest.slice(0, ob) : rest).trim().toUpperCase();
+      if (target === 'END') return true;
+    }
+  }
+  return false;
+}
+
+function renderSidebar(game, problems){
+  const startKey = (game.meta.start || '').toLowerCase();
+  const edges = buildEdges(game);
+  const reachable = new Set();
+  const root = startKey || (game.order[0] && game.order[0].key);
+  if (root){
+    const stack = [root];
+    while (stack.length){
+      const k = stack.pop();
+      if (reachable.has(k) || !game.passages[k]) continue;
+      reachable.add(k);
+      for (const t of (edges.get(k) || [])) stack.push(t);
+    }
+  }
+
+  const tree = $('story-tree');
+  tree.innerHTML = '';
+  $('story-count').textContent = game.order.length || '';
+  const filter = passageFilter.toLowerCase();
+  const visible = game.order.filter(function(p){
+    return !filter || p.name.toLowerCase().indexOf(filter) >= 0;
+  });
+
+  if (!game.order.length){
+    tree.innerHTML = '<div class="empty-state">No passages yet. Start one with <code>:: start</code></div>';
+  } else if (!visible.length){
+    tree.innerHTML = '<div class="empty-state">No passages match "' + esc(passageFilter) + '".</div>';
+  } else {
+    for (let i = 0; i < visible.length; i++){
+      const p = visible[i];
+      const isStart = p.key === startKey;
+      const ending = isEnding(p);
+      const unreachable = !reachable.has(p.key);
+      const el = document.createElement('div');
+      el.className = 'row passage';
+      el.dataset.key = p.key;
+      let icon;
+      if (isStart) icon = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l8 6-8 6z"/></svg>';
+      else if (ending) icon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="10" height="10" rx="1.5"/></svg>';
+      else icon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/></svg>';
+      const iconCls = isStart ? 'icon start' : (ending ? 'icon ending' : 'icon');
+      el.innerHTML = '<span class="' + iconCls + '">' + icon + '</span>' +
+                     '<span class="label">' + esc(p.name) + '</span>' +
+                     '<span class="meta">' + p.n + '</span>';
+      if (unreachable) el.style.opacity = '0.55';
+      el.onclick = (function(line){ return function(){ jumpToLine(line); }; })(p.n);
+      tree.appendChild(el);
+    }
+  }
+  if (currentPassage) highlightInSidebar(currentPassage);
+
+  renderMap(game, edges, reachable, startKey);
+
+  const pl = $('problems-list');
+  pl.innerHTML = '';
+  const errCount = problems.filter(function(p){ return p.sev === 'error'; }).length;
+  const warnCount = problems.filter(function(p){ return p.sev === 'warn'; }).length;
+  const countEl = $('problems-count');
+  countEl.textContent = problems.length
+    ? (errCount ? errCount + ' ✕, ' + warnCount + ' ⚠' : warnCount + ' ⚠') : '';
+  countEl.style.color = errCount ? '#f48771' : (warnCount ? '#d7ba7d' : '');
+
+  if (!problems.length){
+    pl.innerHTML = '<div class="empty-state">No problems detected in the workspace.</div>';
+  } else {
+    for (let i = 0; i < problems.length; i++){
+      const p = problems[i];
+      const el = document.createElement('div');
+      el.className = 'row problem ' + p.sev;
+      el.innerHTML =
+        '<span class="icon">' + (p.sev === 'error'
+          ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6"/><path d="M6 6l4 4M10 6l-4 4"/></svg>'
+          : '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2L1 14h14z"/><path d="M8 6v4M8 12v.01"/></svg>'
+        ) + '</span>' +
+        '<span class="body"><span class="where">Ln ' + p.n + '</span>' + esc(p.msg) + '</span>';
+      el.onclick = (function(line){ return function(){ jumpToLine(line); }; })(p.n);
+      pl.appendChild(el);
+    }
+  }
+
+  const abBadge = $('ab-badge-problems');
+  const total = errCount + warnCount;
+  if (total > 0){
+    abBadge.textContent = total;
+    abBadge.className = 'badge on' + (errCount ? '' : ' warn');
+  } else abBadge.className = 'badge';
+
+  $('st-problems-text').textContent = errCount
+    ? errCount + ' ✕, ' + warnCount + ' ⚠'
+    : (warnCount ? warnCount + ' ⚠' : '0');
+
+  errorLines = new Set(problems.filter(function(p){ return p.sev === 'error'; }).map(function(p){ return p.n; }));
+  applyErrorMarkers();
+}
+
+function renderMap(game, edges, reachable, startKey){
+  const wrap = $('map-wrap');
+  if (!game.order.length){
+    wrap.innerHTML = '<div class="empty-state" style="text-align:center">No passages to map yet.</div>';
+    return;
+  }
+  const levels = [];
+  const seen = new Set();
+  const root = startKey || game.order[0].key;
+  let cur = root ? [root] : [];
+  if (root) seen.add(root);
+  let guard = 0;
+  while (cur.length && guard++ < 200){
+    levels.push(cur);
+    const next = [];
+    for (let i = 0; i < cur.length; i++){
+      const arr = Array.from(edges.get(cur[i]) || new Set());
+      for (let ti = 0; ti < arr.length; ti++){
+        const t = arr[ti];
+        if (!seen.has(t) && game.passages[t]){ seen.add(t); next.push(t); }
+      }
+    }
+    cur = next;
+  }
+  const unreached = game.order.filter(function(p){ return !seen.has(p.key); }).map(function(p){ return p.key; });
+  if (unreached.length) levels.push(unreached);
+
+  const R = 10, HG = 22, VG = 64, PAD = 24;
+  const levelWidths = levels.map(function(l){ return l.length * R * 2 + (l.length - 1) * HG; });
+  const maxLevelW = Math.max.apply(null, levelWidths.concat([80]));
+  const totalW = maxLevelW + PAD * 2;
+  const totalH = PAD * 2 + levels.length * VG;
+
+  const positions = new Map();
+  for (let li = 0; li < levels.length; li++){
+    const level = levels[li];
+    const lw = levelWidths[li];
+    const startX = PAD + (maxLevelW - lw) / 2;
+    const y = PAD + li * VG + R;
+    for (let ki = 0; ki < level.length; ki++){
+      positions.set(level[ki], { x: startX + ki * (R * 2 + HG) + R, y: y });
+    }
+  }
+  let svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + totalW + '" height="' + totalH +
+            '" viewBox="0 0 ' + totalW + ' ' + totalH + '">';
+  const edgeIter = Array.from(edges.entries());
+  for (let ei = 0; ei < edgeIter.length; ei++){
+    const from = edgeIter[ei][0];
+    const fp = positions.get(from);
+    if (!fp) continue;
+    const arr = Array.from(edgeIter[ei][1]);
+    for (let ti = 0; ti < arr.length; ti++){
+      const tp = positions.get(arr[ti]);
+      if (!tp) continue;
+      svg += '<path class="map-edge" d="M ' + fp.x + ' ' + (fp.y + R) + ' L ' + tp.x + ' ' + (tp.y - R) + '"/>';
+    }
+  }
+  for (let pi = 0; pi < game.order.length; pi++){
+    const p = game.order[pi];
+    const pos = positions.get(p.key);
+    if (!pos) continue;
+    const isStart = p.key === startKey;
+    const ending = isEnding(p);
+    const unreachable = !reachable.has(p.key);
+    let cls = 'map-node';
+    if (isStart) cls += ' is-start';
+    else if (ending) cls += ' is-end';
+    if (unreachable) cls += ' is-unreachable';
+    svg += '<circle class="' + cls + '" cx="' + pos.x + '" cy="' + pos.y + '" r="' + R + '" data-key="' + esc(p.key) + '"/>';
+    svg += '<text class="map-label' + (isStart ? ' is-start' : '') + '" x="' + pos.x + '" y="' + (pos.y + R + 13) + '" data-key="' + esc(p.key) + '">' + esc(p.name) + '</text>';
+  }
+  svg += '</svg>';
+  wrap.innerHTML = svg;
+  const clickables = wrap.querySelectorAll('[data-key]');
+  for (let i = 0; i < clickables.length; i++){
+    const el = clickables[i];
+    el.onclick = function(){
+      const p = game.passages[el.dataset.key];
+      if (p) jumpToLine(p.n);
+    };
+  }
+}
+
+function highlightInSidebar(key){
+  const rows = document.querySelectorAll('#story-tree .row.passage');
+  for (let i = 0; i < rows.length; i++){
+    rows[i].classList.toggle('active', rows[i].dataset.key === key);
+  }
+  const nodes = document.querySelectorAll('#map-wrap .map-node');
+  for (let i = 0; i < nodes.length; i++){
+    nodes[i].style.strokeWidth = nodes[i].dataset.key === key ? '3' : '';
+  }
+}
+
+function renderVars(interp){
+  const vl = $('vars-list');
+  if (!interp || !interp.vars){
+    vl.innerHTML = '<div class="empty-state">Run the game to inspect its variables.</div>';
+    return;
+  }
+  const varKeys = Object.keys(interp.vars).sort();
+  const listKeys = Object.keys(interp.lists).sort();
+  if (!varKeys.length && !listKeys.length){
+    vl.innerHTML = '<div class="empty-state">No variables declared.</div>';
+    return;
+  }
+  let html = '<div class="vars-list">';
+  for (let i = 0; i < varKeys.length; i++){
+    const k = varKeys[i];
+    const changed = startVarsRef && startVarsRef[k] !== interp.vars[k];
+    html += '<div class="vars-row' + (changed ? ' changed' : '') + '">'
+          + '<span class="k">' + esc(k) + '</span>'
+          + '<span class="v">' + esc(String(interp.vars[k])) + '</span>'
+          + '</div>';
+  }
+  for (let i = 0; i < listKeys.length; i++){
+    const k = listKeys[i];
+    const cur = (interp.lists[k] || []).join(', ') || '—';
+    const startArr = startListsRef && startListsRef[k] ? startListsRef[k].join(', ') : '';
+    const changed = startListsRef && startArr !== cur;
+    html += '<div class="vars-row' + (changed ? ' changed' : '') + '">'
+          + '<span class="k">' + esc(k) + '[]</span>'
+          + '<span class="v">' + esc(cur) + '</span>'
+          + '</div>';
+  }
+  html += '</div>';
+  vl.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACTIVITY / LAYOUT
+   ═══════════════════════════════════════════════════════════════════ */
+function setActivity(view){
+  if (currentActivity === view && !sidebarHidden){ sidebarHidden = true; }
+  else { currentActivity = view; sidebarHidden = false; }
+  applyLayout();
+}
+function applyLayout(){
+  app.classList.toggle('sidebar-hidden', sidebarHidden);
+  app.classList.toggle('sidebar-open', !sidebarHidden);
+  const activities = document.querySelectorAll('.activity[data-activity]');
+  for (let i = 0; i < activities.length; i++){
+    const el = activities[i];
+    el.classList.toggle('active', el.dataset.activity === currentActivity && !sidebarHidden);
+  }
+  const views = document.querySelectorAll('.sidebar-view');
+  for (let i = 0; i < views.length; i++){
+    views[i].classList.toggle('active', views[i].dataset.view === currentActivity);
+  }
+}
+document.querySelectorAll('.activity[data-activity]').forEach(function(el){
+  el.onclick = function(){ setActivity(el.dataset.activity); };
+});
+document.querySelectorAll('.section-head[data-toggle]').forEach(function(h){
+  h.onclick = function(){ h.parentElement.classList.toggle('collapsed'); };
+});
+$('passage-search').addEventListener('input', function(e){
+  passageFilter = e.target.value;
+  if (lastGame) renderSidebar(lastGame, lastProblems);
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   PANEL RESIZE
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+  const resizer = $('panel-resizer');
+  let dragging = false, startY = 0, startH = 0;
+  resizer.addEventListener('mousedown', function(e){
+    dragging = true; startY = e.clientY;
+    startH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--panel-h')) || 260;
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+    resizer.classList.add('dragging');
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', function(e){
+    if (!dragging) return;
+    const dy = startY - e.clientY;
+    const h = Math.max(60, Math.min(window.innerHeight - 200, startH + dy));
+    document.documentElement.style.setProperty('--panel-h', h + 'px');
+  });
+  window.addEventListener('mouseup', function(){
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    resizer.classList.remove('dragging');
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   DEBOUNCED
+   ═══════════════════════════════════════════════════════════════════ */
+let lintTimer = null, runTimer = null, saveTimer = null, savedFlashTimer = null;
+function scheduleLint(){
+  clearTimeout(lintTimer);
+  lintTimer = setTimeout(function(){
+    try {
+      const game = parse(currentText);
+      const problems = lint(game);
+      lastGame = game;
+      lastProblems = problems;
+      renderSidebar(game, problems);
+      updateStats();
+    } catch(e){}
+  }, 220);
+}
+function scheduleRun(){
+  clearTimeout(runTimer);
+  runTimer = setTimeout(function(){
+    // Auto-run skips pauses and typewriter — those are for the player.
+    runGame({ skipEffects: true });
+  }, 700);
+}
+function scheduleAutosave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    try {
+      localStorage.setItem('tgame.source', currentText);
+      localStorage.setItem('tgame.name', fileName);
+      const el = $('st-saved');
+      el.style.transition = 'opacity .15s';
+      el.style.opacity = '1';
+      clearTimeout(savedFlashTimer);
+      savedFlashTimer = setTimeout(function(){ el.style.opacity = '0'; }, 800);
+      clearDirty();
+    } catch(e){}
+  }, 500);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FILES
+   ═══════════════════════════════════════════════════════════════════ */
+function setFileName(n){
+  fileName = n;
+  $('tab-name').textContent = n;
+  updateBreadcrumbs();
+  if (lastGame) renderSidebar(lastGame, lastProblems);
+  document.title = n + ' — tgame studio';
+}
+function downloadFile(){
+  const blob = new Blob([currentText], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fileName || 'game.tgame';
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 500);
+  clearDirty();
+}
+function newFile(){
+  if (!confirm('Discard the current file and start a new one?')) return;
+  applySource(TEMPLATE_SOURCE);
+  setFileName('untitled.tgame');
+  scheduleLint();
+  scheduleAutosave();
+  runGame();
+}
+$('btn-run').onclick = function(){ runGame(); };
+$('btn-restart').onclick = function(){ runGame(); };
+$('btn-toggle-panel').onclick = function(){ app.classList.toggle('panel-hidden'); if (cm) cm.refresh(); };
+$('file-input').onchange = function(e){
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = function(){
+    applySource(r.result);
+    setFileName(f.name);
+    scheduleLint();
+    scheduleAutosave();
+    runGame();
+  };
+  r.readAsText(f);
+  e.target.value = '';
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   STANDALONE EXPORT
+   ═══════════════════════════════════════════════════════════════════ */
+const RUNTIME_FNS = [
+  'const ESC_SET = ' + JSON.stringify(ESC_SET) + ';',
+  'const ESC_TO_PH = ' + JSON.stringify(ESC_TO_PH) + ';',
+  'const PH_TO_ESC = ' + JSON.stringify(PH_TO_ESC) + ';',
+  'const KNOWN_DIRECTIVES = ' + JSON.stringify(KNOWN_DIRECTIVES) + ';',
+  'const MODES = ' + JSON.stringify(MODES) + ';',
+  'const TOKEN_RE = ' + TOKEN_RE.toString() + ';',
+  'const PROMPT_BARE_RE = ' + PROMPT_BARE_RE.toString() + ';',
+  'const PROMPT_INLINE_RE = ' + PROMPT_INLINE_RE.toString() + ';',
+  'const PAUSE_RE = ' + PAUSE_RE.toString() + ';',
+  'const MODE_RE = ' + MODE_RE.toString() + ';',
+  escapeLine.toString(),
+  unescapeText.toString(),
+  isEscapedStart.toString(),
+  parse.toString(),
+  parsePromptLine.toString(),
+  parsePauseLine.toString(),
+  parseModeLine.toString(),
+  evalExpr.toString(),
+  evalCondition.toString(),
+  splitTopLevel.toString(),
+  interp.toString(),
+  expandInterp.toString(),
+  applyEffects.toString(),
+  parseChoice.toString(),
+  Interp.toString(),
+  'Interp.prototype._rng = ' + Interp.prototype._rng.toString() + ';',
+  'Interp.prototype.ctx = ' + Interp.prototype.ctx.toString() + ';',
+  'Interp.prototype.run = ' + Interp.prototype.run.toString() + ';'
+].join('\n\n');
+
+const STANDALONE_BOOT = function(source){
+  var out  = document.getElementById('out');
+  var list = document.getElementById('choices');
+  var form = document.getElementById('form');
+  var cmd  = document.getElementById('cmd');
+  var awaiting = null;
+  var activeTw = null;
+
+  function print(text, cls){
+    var p = document.createElement('p');
+    if (cls) p.className = cls;
+    if (cls === 'echo' || cls === 'err' || cls === 'sys') p.textContent = text;
+    else p.innerHTML = fmt(text);
+    out.appendChild(p);
+    window.scrollTo(0, document.body.scrollHeight);
+    return p;
+  }
+  function fmt(text){
+    var h = String(text).replace(/[&<>]/g, function(c){
+      return c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c;
+    });
+    h = h.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    h = h.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    return h;
+  }
+
+  function tw(text, speed, done){
+    var p = print(text);
+    p.className = 'tw';
+    var chars = [];
+    var textNodes = [];
+    var walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT, null, false);
+    var node;
+    while ((node = walker.nextNode())) textNodes.push(node);
+    for (var i = 0; i < textNodes.length; i++){
+      var tn = textNodes[i];
+      var frag = document.createDocumentFragment();
+      var val = tn.nodeValue;
+      for (var j = 0; j < val.length; j++){
+        var span = document.createElement('span');
+        span.textContent = val[j];
+        span.style.visibility = 'hidden';
+        frag.appendChild(span);
+        chars.push(span);
+      }
+      tn.parentNode.replaceChild(frag, tn);
+    }
+    var idx = 0, finished = false, timer = null;
+    function finish(){
+      if (finished) return;
+      finished = true;
+      if (timer) clearInterval(timer);
+      for (var k = idx; k < chars.length; k++) chars[k].style.visibility = 'visible';
+      out.removeEventListener('click', skip);
+      activeTw = null;
+      if (done) done();
+    }
+    function skip(){ finish(); }
+    timer = setInterval(function(){
+      if (idx >= chars.length){ finish(); return; }
+      chars[idx].style.visibility = 'visible';
+      idx++;
+      window.scrollTo(0, document.body.scrollHeight);
+    }, Math.max(1, speed));
+    out.addEventListener('click', skip);
+    activeTw = { finish: finish };
+  }
+
+  var game = parse(source);
+  var interp = new Interp(game);
+  var gen = interp.run();
+
+  function pump(input){
+    var r;
+    try { r = gen.next(input); }
+    catch(e){ print('runtime error: ' + e.message, 'err'); return; }
+
+    function next(){
+      for(;;){
+        if (r.done){ finish(); return; }
+        var v = r.value;
+        if (v.type === 'text'){
+          if (v.typewriter){
+            tw(v.text, v.speed || 30, function(){ r = gen.next(); next(); });
+            return;
+          }
+          print(v.text, v.style === 'prompt' ? 'prompt' : undefined);
+          r = gen.next();
+          continue;
+        }
+        if (v.type === 'pause'){
+          var ms = v.ms;
+          setTimeout(function(){ r = gen.next(); next(); }, ms);
+          return;
+        }
+        if (v.type === 'end'){ finish(); return; }
+        if (v.type === 'error'){ print('*** ' + v.text, 'err'); return; }
+        if (v.type === 'input'){
+          form.classList.add('awaiting');
+          cmd.placeholder = 'type your answer…';
+          cmd.value = '';
+          cmd.focus();
+          awaiting = { submit: function(a){ pump(a); } };
+          return;
+        }
+        if (v.type === 'choice'){ render(v.choices, v.parserMode); return; }
+        r = gen.next();
+      }
+    }
+    next();
+  }
+  function finish(){
+    print('— The End —', 'sys');
+    form.style.display = 'none';
+  }
+  function render(choices, parserMode){
+    list.innerHTML = '';
+    if (parserMode){
+      cmd.placeholder = 'type a command (try "help")…';
+      cmd.focus();
+      return;
+    }
+    choices.forEach(function(c, i){
+      var li = document.createElement('li');
+      var b = document.createElement('button');
+      b.innerHTML = '<span class="num">' + (i+1) + '.</span><span>' + c.label.replace(/[&<>]/g, function(ch){
+        return ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch;
+      }) + '</span>';
+      b.onclick = function(){ print('> ' + c.label, 'echo'); list.innerHTML = ''; pump(i); };
+      li.appendChild(b);
+      list.appendChild(li);
+    });
+    cmd.placeholder = 'type a command or number…';
+    cmd.focus();
+  }
+  function showHelp(){
+    var btns = list.querySelectorAll('button');
+    if (!btns.length){ print("I don't see any commands here.", 'sys'); return; }
+    print('Commands available here:', 'sys');
+    btns.forEach(function(b){
+      var label = b.textContent.replace(/^\d+\.\s*/, '');
+      var alias = label.split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+      print('  ' + alias + '  —  ' + label, 'sys');
+    });
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (activeTw){ activeTw.finish(); }
+    var v = cmd.value;
+    if (awaiting){
+      var s = awaiting.submit;
+      awaiting = null;
+      form.classList.remove('awaiting');
+      cmd.value = '';
+      print('> ' + v, 'echo');
+      s(v);
+      return;
+    }
+    var trimmed = v.trim();
+    if (!trimmed) return;
+    var low = trimmed.toLowerCase();
+    if (low === 'help' || low === '?'){
+      showHelp();
+      cmd.value = '';
+      return;
+    }
+    var btns = list.querySelectorAll('button'), pick = -1;
+    if (/^\d+$/.test(trimmed)) pick = parseInt(trimmed, 10) - 1;
+    else for (var i = 0; i < btns.length; i++){
+      var lbl = btns[i].textContent.replace(/^\d+\.\s*/, '').toLowerCase();
+      var first = lbl.split(/\s+/)[0].replace(/[^a-z0-9]/g, '');
+      if (lbl === low || first === low){ pick = i; break; }
+    }
+    if (pick >= 0 && pick < btns.length){ cmd.value = ''; btns[pick].click(); }
+    else { print('I don\'t understand "' + trimmed + '".', 'sys'); cmd.value = ''; }
+  });
+
+  document.title = (game.meta.title || 'tgame');
+  pump();
+};
+
+function buildStandalone(source){
+  const title = (parse(source).meta.title || 'tgame');
+  const srcLit = JSON.stringify(source).replace(/<\//g, '<\\/');
+  return '<!doctype html>\n' +
+'<html lang="en">\n' +
+'<head>\n' +
+'<meta charset="utf-8">\n' +
+'<meta name="viewport" content="width=device-width,initial-scale=1">\n' +
+'<title>' + esc(title) + '</title>\n' +
+'<style>\n' +
+'html,body{margin:0;background:#1e1e1e;color:#d4d4d4;\n' +
+'  font:15px/1.75 ui-monospace,Menlo,Monaco,Consolas,monospace}\n' +
+'body{max-width:44rem;margin:0 auto;padding:2.5rem 1.25rem 6rem}\n' +
+'#out p{margin:0 0 .85em;white-space:pre-wrap}\n' +
+'#out p.tw{animation:none}\n' +
+'#out p.echo{color:#9cdcfe;opacity:.6;margin-bottom:.35em}\n' +
+'#out p.err{color:#f48771}\n' +
+'#out p.sys{color:#6a9955;font-style:italic}\n' +
+'#out p.prompt{color:#d99058;font-style:italic}\n' +
+'#out em{color:#9cdcfe;font-style:italic}\n' +
+'#out strong{color:#e7e7e7;font-weight:600}\n' +
+'#choices{list-style:none;padding:0;margin:.8em 0 0}\n' +
+'#choices button{background:none;border:0;color:#d99058;font:inherit;\n' +
+'  cursor:pointer;padding:.2em 0;text-align:left;display:flex;gap:.8em;width:100%}\n' +
+'#choices button:hover{color:#e6a56f;text-decoration:underline}\n' +
+'#choices .num{color:#6a6a6a}\n' +
+'#form{margin-top:1.6em}\n' +
+'#cmd{width:100%;background:#3c3c3c;border:1px solid #3c3c3c;color:#e7e7e7;\n' +
+'  font:inherit;padding:.55em .75em;border-radius:3px;outline:0}\n' +
+'#cmd:focus{border-color:#d99058}\n' +
+'#form.awaiting #cmd{border-color:#d99058;box-shadow:0 0 0 1px #d99058}\n' +
+'</style>\n' +
+'</head>\n' +
+'<body>\n' +
+'<div id="out"></div>\n' +
+'<ul id="choices"></ul>\n' +
+'<form id="form"><input id="cmd" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="type a command…"></form>\n' +
+'<script>\n' +
+'var SOURCE = ' + srcLit + ';\n' +
+RUNTIME_FNS + '\n' +
+'(' + STANDALONE_BOOT.toString() + ')(SOURCE);\n' +
+'<\/script>\n' +
+'</body>\n' +
+'</html>';
+}
+
+function exportHtml(){
+  const game = parse(currentText);
+  const errs = lint(game).filter(function(p){ return p.sev === 'error'; });
+  if (errs.length && !confirm(errs.length + ' error(s) found. Export anyway?')) return;
+  const html = buildStandalone(currentText);
+  const base = (fileName || 'game.tgame').replace(/\.tgame$/i, '');
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = base + '.html';
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 500);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EXAMPLES
+   ═══════════════════════════════════════════════════════════════════ */
+const EXAMPLES = {
+  cave: {
+    label: 'The Cave',
+    hint: 'inventory + conditions',
+    source: '@title The Cave\n@author You\n@start entrance\n\n' +
+'@set score = 0\n\n' +
+':: entrance\n' +
+'The cave mouth yawns open in the hillside.\n' +
+'Cold air spills out, smelling of wet stone.\n\n' +
+'if not has lamp:\n' +
+'A rusted brass lamp lies half-buried in the dirt.\n' +
+'* Take the lamp -> entrance [get lamp, score += 5]\n' +
+'end\n\n' +
+'* Go north into the cave -> dark_hall\n' +
+'* Walk back to the village -> village\n\n' +
+':: dark_hall\n' +
+'if has lamp:\n' +
+'By the lamp\'s thin light you see a door to the east\n' +
+'and a low passage leading north.\n' +
+'* Open the door -> treasure\n' +
+'* Follow the passage -> deep\n' +
+'else:\n' +
+'It\'s pitch black in here. Something is breathing,\n' +
+'slowly, somewhere ahead of you.\n' +
+'* Retreat -> entrance\n' +
+'end\n\n' +
+':: deep\n' +
+'The passage narrows and then stops entirely.\n' +
+'Something glitters in the rock at eye level.\n' +
+'* Pry it loose -> treasure [get gem, score += 50]\n' +
+'* Go back -> dark_hall\n\n' +
+':: treasure\n' +
+'Gold. Actual gold, warm to the touch.\n' +
+'You are rich, and possibly cursed.\n\n' +
+'You are carrying {inventory}.\n' +
+'Your score: {score}\n' +
+'-> END\n\n' +
+':: village\n' +
+'The village is warm and boring. You go home.\n\n' +
+'Your score: {score}\n' +
+'-> END\n'
+  },
+  rock: {
+    label: 'Magic Rock',
+    hint: 'variables & conditions',
+    source: '@title The Magic Rock\n@start beach\n\n' +
+'@set polished = false\n@set score = 0\n\n' +
+':: beach\n' +
+'You find a dull grey rock on the sand.\n\n' +
+'if polished:\n' +
+'The rock gleams faintly in the afternoon sun.\n' +
+'else:\n' +
+'It\'s just an ordinary rock. Boring, even.\n' +
+'end\n\n' +
+'* Polish the rock -> beach [polished = true, score += 1]\n' +
+'* Throw it in the sea -> sea\n' +
+'* Put it in your pocket -> pocket [get rock]\n\n' +
+':: sea\n' +
+'You hurl the rock into the waves. It sinks immediately.\n' +
+'Somewhere, a fish is disappointed.\n\n' +
+'Score: {score}\n' +
+'-> END\n\n' +
+':: pocket\n' +
+'You put the rock in your pocket. It is a good rock.\n\n' +
+'Score: {score}\n' +
+'-> END\n'
+  },
+  counter: {
+    label: 'Counter',
+    hint: 'self-looping choices',
+    source: '@title Counter\n@start start\n\n' +
+'@set n = 0\n@set clicks = 0\n\n' +
+':: start\n' +
+'The counter shows: {n}\n\n' +
+'You\'ve pressed the button {clicks} {clicks == 1 | time | times}.\n\n' +
+'* Press the button [n += 1, clicks += 1]\n' +
+'* Reset [n = 0, clicks = 0]\n' +
+'* Stop -> END\n'
+  },
+  name: {
+    label: 'Your Name',
+    hint: 'player input',
+    source: '@title Your Name\n@start start\n\n' +
+':: start\n' +
+'A robed figure sits at a desk. They look up.\n\n' +
+'? What is your name? [name]\n\n' +
+':: greeting\n' +
+'"Welcome, {name}."\n\n' +
+'They hand you a key.\n' +
+'[get key]\n\n' +
+'Your inventory: {inventory}.\n' +
+'-> greeting_end\n\n' +
+':: greeting_end\n' +
+'You leave the office, key in hand.\n' +
+'-> END\n'
+  },
+  mood: {
+    label: 'Mood Piece',
+    hint: 'pauses & typewriter',
+    source: '@title The Empty House\n@start hall\n\n' +
+'@typewriter slow\n\n' +
+':: hall\n' +
+'You push the door open. It swings inward without a sound.\n\n' +
+'...\n' +
+'\n' +
+'The hallway is long and narrow. Dust hangs in the air,\n' +
+'lit by a single window at the far end.\n\n' +
+'...\n' +
+'\n' +
+'~type\n' +
+'Somewhere in the house, a clock is ticking.\n' +
+'~normal\n' +
+'\n' +
+'... 1500\n' +
+'\n' +
+'Then it stops.\n\n' +
+'* Walk down the hall -> hall_end\n' +
+'* Leave -> END\n\n' +
+':: hall_end\n' +
+'The hallway is much longer than it looked from the door.\n' +
+'-> END\n'
+  },
+  parser: {
+    label: 'Typed Commands',
+    hint: 'parser mode',
+    source: '@title Parser Demo\n@start hall\n@parser\n\n' +
+':: hall\n' +
+'A narrow hall. A DOOR is east, and a LAMP sits on a table.\n\n' +
+'* Look at the lamp -> hall\n' +
+'* Take the lamp -> hall [get lamp]\n' +
+'* Open the door -> corridor\n\n' +
+':: corridor\n' +
+'You step through into a brighter corridor.\n\n' +
+'* Go back -> hall\n' +
+'* Continue -> END\n'
+  },
+  hello: {
+    label: 'Hello, World',
+    hint: 'absolute minimum',
+    source: '@title Hello, World\n@start start\n\n' +
+':: start\nHello, world!\n\n' +
+'This is a tgame — a tiny interactive story.\n\n' +
+'* Say goodbye -> END\n' +
+'* Say hello again -> start\n'
+  }
+};
+
+function loadExample(key){
+  const ex = EXAMPLES[key];
+  if (!ex) return;
+  if (!confirm('Load "' + ex.label + '"? Your current file will be replaced.')) return;
+  applySource(ex.source);
+  setFileName(key + '.tgame');
+  scheduleLint();
+  scheduleAutosave();
+  runGame();
+}
+
+(function buildExamplesList(){
+  const list = $('examples-list');
+  const keys = Object.keys(EXAMPLES);
+  for (let i = 0; i < keys.length; i++){
+    const key = keys[i];
+    const ex = EXAMPLES[key];
+    const el = document.createElement('div');
+    el.className = 'row example';
+    el.innerHTML =
+      '<span class="icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">' +
+        '<path d="M4 12.5A2.5 2.5 0 0 1 6.5 10H13"/>' +
+        '<path d="M6.5 2H13v12H6.5A2.5 2.5 0 0 1 4 11.5v-7A2.5 2.5 0 0 1 6.5 2z"/>' +
+      '</svg></span>' +
+      '<span class="body"><span class="label">' + esc(ex.label) + '</span>' +
+      '<span class="desc">' + esc(ex.hint) + '</span></span>';
+    el.onclick = (function(k){ return function(){ loadExample(k); }; })(key);
+    list.appendChild(el);
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODALS / TUTORIAL / PALETTE
+   ═══════════════════════════════════════════════════════════════════ */
+function openModal(id){ $(id).hidden = false; }
+function closeModal(id){ $(id).hidden = true; }
+
+$('btn-help-activity').onclick = function(){ openModal('help-modal'); };
+$('help-close').onclick = function(){ closeModal('help-modal'); };
+$('welcome-skip').onclick = function(){
+  closeModal('welcome-modal');
+  try { localStorage.setItem('tgame.seen', '1'); } catch(e){}
+};
+$('welcome-tour').onclick = function(){
+  closeModal('welcome-modal');
+  try { localStorage.setItem('tgame.seen', '1'); } catch(e){}
+  startTutorial();
+};
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    closeModal('help-modal');
+    closeModal('welcome-modal');
+    closeModal('tutorial-modal');
+    closePalette();
+  }
+});
+document.querySelectorAll('.overlay').forEach(function(o){
+  o.onclick = function(e){
+    if (e.target === o && o.id !== 'welcome-modal' && o.id !== 'tutorial-modal') o.hidden = true;
+  };
+});
+
+const TUTORIAL = [
+  { title: 'Welcome to tgame',
+    body: '<p>tgame is a tiny language for text adventures. Every game is a single ' +
+          'plain text file.</p>' +
+          '<p>The <strong>editor</strong> is in the middle. The <strong>play panel</strong> ' +
+          'at the bottom runs your game as you type. The <strong>activity rail</strong> ' +
+          'on the far left switches views.</p>' +
+          '<p style="color:var(--text-dim); font-size:12.5px">Press ' +
+          '<kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>P</kbd> any time for the command palette.</p>' },
+  { title: 'A passage is a place',
+    body: '<p>Every location in your story is a <strong>passage</strong>. Start one ' +
+          'with <code>:: name</code>.</p>' +
+          '<p>Any line that isn\'t special is <strong>narration</strong> — plain text ' +
+          'shown to the player.</p>',
+    code: ':: entrance\nYou stand at the mouth of a cave.\nA cold wind spills out.' },
+  { title: 'Choices and inventory',
+    body: '<p>A line starting with <code>*</code> gives the player a choice. Add a ' +
+          'target to move; leave it off to <strong>stay in place</strong>.</p>' +
+          '<p><code>[get X]</code> and <code>[drop X]</code> manage the inventory. ' +
+          '<code>if has X:</code> checks it. <code>{inventory}</code> lists it.</p>',
+    code: '* Take the lamp -> entrance [get lamp]\n* Toggle the lantern [lamp = not lamp]\n* Go north -> dark_hall\n\nif has lamp:\nThe lamp glows.\nend' },
+  { title: 'Pacing',
+    body: '<p>A line that is just <code>...</code> waits half a second before ' +
+          'continuing. Add a duration to taste.</p>' +
+          '<p>Toggle the typewriter effect with <code>~type</code> and ' +
+          '<code>~normal</code>. Click anywhere in the play panel to skip.</p>',
+    code: 'The lights flicker.\n...\n... 800\nThe lights go out.\n\n~type\nA voice whispers your name.\n~normal\n\nYou are alone.' },
+  { title: "That's the whole language",
+    body: '<p>Everything you just read composes into complete games.</p>' +
+          '<p>Press the <strong>?</strong> activity at the bottom of the rail for ' +
+          'the full reference. Try an <strong>Example</strong> to see a finished game.</p>' +
+          '<p style="color:var(--text-dim); font-size:12.5px">Now go write something strange.</p>',
+    isLast: true }
+];
+let tutIndex = 0;
+function startTutorial(){ tutIndex = 0; renderTutorial(); openModal('tutorial-modal'); }
+function renderTutorial(){
+  const step = TUTORIAL[tutIndex];
+  $('tut-title').textContent = step.title;
+  let html = step.body;
+  if (step.code) html += '<pre>' + highlight(step.code) + '</pre>';
+  $('tut-body').innerHTML = html;
+  const dots = $('tut-dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < TUTORIAL.length; i++){
+    const d = document.createElement('i');
+    if (i === tutIndex) d.className = 'on';
+    dots.appendChild(d);
+  }
+  $('tut-back').disabled = tutIndex === 0;
+  $('tut-next').textContent = step.isLast ? 'Done' : 'Next';
+}
+$('tut-back').onclick = function(){ if (tutIndex > 0){ tutIndex--; renderTutorial(); } };
+$('tut-next').onclick = function(){
+  if (tutIndex < TUTORIAL.length - 1){ tutIndex++; renderTutorial(); }
+  else closeModal('tutorial-modal');
+};
+
+const COMMANDS = [
+  { id:'run',      label:'Run Game',                 hint:'Ctrl+Enter',  run: function(){ runGame(); } },
+  { id:'restart',  label:'Restart Game',             hint:'',            run: function(){ runGame(); } },
+  { id:'new',      label:'New File',                 hint:'Ctrl+N',      run: newFile },
+  { id:'open',     label:'Open File…',               hint:'Ctrl+O',      run: function(){ $('file-input').click(); } },
+  { id:'save',     label:'Save As…',                 hint:'Ctrl+S',      run: downloadFile },
+  { id:'export',   label:'Export Standalone HTML…',  hint:'',            run: exportHtml },
+  { id:'panel',    label:'Toggle Panel',             hint:'Ctrl+J',      run: function(){ app.classList.toggle('panel-hidden'); if (cm) cm.refresh(); } },
+  { id:'sidebar',  label:'Toggle Sidebar',           hint:'Ctrl+B',      run: function(){ sidebarHidden = !sidebarHidden; applyLayout(); if (cm) cm.refresh(); } },
+  { id:'story',    label:'Show Story',               hint:'',            run: function(){ currentActivity = 'story'; sidebarHidden = false; applyLayout(); } },
+  { id:'map',      label:'Show Map',                 hint:'',            run: function(){ currentActivity = 'map'; sidebarHidden = false; applyLayout(); } },
+  { id:'problems', label:'Show Problems',            hint:'',            run: function(){ currentActivity = 'problems'; sidebarHidden = false; applyLayout(); } },
+  { id:'examples', label:'Show Examples',            hint:'',            run: function(){ currentActivity = 'examples'; sidebarHidden = false; applyLayout(); } },
+  { id:'vars',     label:'Show State',               hint:'',            run: function(){ currentActivity = 'vars'; sidebarHidden = false; applyLayout(); } },
+  { id:'help',     label:'Show Language Reference',  hint:'?',           run: function(){ openModal('help-modal'); } },
+  { id:'tutorial', label:'Start Tutorial',           hint:'',            run: startTutorial }
+];
+(function(){
+  const keys = Object.keys(EXAMPLES);
+  for (let i = 0; i < keys.length; i++){
+    const k = keys[i];
+    COMMANDS.push({
+      id: 'example-' + k,
+      label: 'Load Example: ' + EXAMPLES[k].label,
+      hint: EXAMPLES[k].hint,
+      run: (function(key){ return function(){ loadExample(key); }; })(k)
+    });
+  }
+})();
+
+let paletteSel = 0;
+let paletteFiltered = [];
+function openPalette(){
+  $('palette-overlay').hidden = false;
+  const input = $('palette-input');
+  input.value = '';
+  input.focus();
+  filterPalette('');
+}
+function closePalette(){ $('palette-overlay').hidden = true; }
+function filterPalette(q){
+  const low = q.toLowerCase();
+  paletteFiltered = COMMANDS.filter(function(c){
+    return c.label.toLowerCase().indexOf(low) >= 0
+        || (c.hint || '').toLowerCase().indexOf(low) >= 0;
+  });
+  paletteSel = 0;
+  renderPalette();
+}
+function renderPalette(){
+  const list = $('palette-list');
+  if (!paletteFiltered.length){
+    list.innerHTML = '<div class="palette-empty">No matching commands.</div>';
+    return;
+  }
+  let html = '';
+  for (let i = 0; i < paletteFiltered.length; i++){
+    const c = paletteFiltered[i];
+    html += '<div class="palette-item' + (i === paletteSel ? ' sel' : '') + '" data-i="' + i + '">' +
+            '<span class="label">' + esc(c.label) + '</span>' +
+            (c.hint ? '<span class="hint">' + esc(c.hint) + '</span>' : '') +
+            '</div>';
+  }
+  list.innerHTML = html;
+  const items = list.querySelectorAll('.palette-item');
+  for (let i = 0; i < items.length; i++){
+    items[i].onclick = (function(idx){
+      return function(){
+        const c = paletteFiltered[idx];
+        closePalette();
+        if (c) c.run();
+      };
+    })(+items[i].dataset.i);
+  }
+}
+$('palette-input').addEventListener('input', function(e){ filterPalette(e.target.value); });
+$('palette-input').addEventListener('keydown', function(e){
+  if (e.key === 'ArrowDown'){ e.preventDefault(); paletteSel = Math.min(paletteFiltered.length - 1, paletteSel + 1); renderPalette(); }
+  else if (e.key === 'ArrowUp'){ e.preventDefault(); paletteSel = Math.max(0, paletteSel - 1); renderPalette(); }
+  else if (e.key === 'Enter'){
+    e.preventDefault();
+    const c = paletteFiltered[paletteSel];
+    closePalette();
+    if (c) c.run();
+  }
+});
+$('palette-overlay').onclick = function(e){
+  if (e.target === $('palette-overlay')) closePalette();
+};
+$('st-palette').onclick = openPalette;
+$('st-problems').onclick = function(){
+  currentActivity = 'problems';
+  sidebarHidden = false;
+  applyLayout();
+};
+
+document.addEventListener('keydown', function(e){
+  const cmd = e.ctrlKey || e.metaKey;
+  if (cmd && e.shiftKey && e.key.toLowerCase() === 'p'){
+    e.preventDefault();
+    if ($('palette-overlay').hidden) openPalette();
+    else closePalette();
+    return;
+  }
+  if (cmd && e.key === 'Enter'){ e.preventDefault(); runGame(); return; }
+  if (cmd && e.key.toLowerCase() === 's'){ e.preventDefault(); downloadFile(); return; }
+  if (cmd && e.key.toLowerCase() === 'o'){ e.preventDefault(); $('file-input').click(); return; }
+  if (cmd && e.key.toLowerCase() === 'n'){ e.preventDefault(); newFile(); return; }
+  if (cmd && e.key.toLowerCase() === 'j'){ e.preventDefault(); app.classList.toggle('panel-hidden'); if (cm) cm.refresh(); return; }
+  if (cmd && e.key.toLowerCase() === 'b'){ e.preventDefault(); sidebarHidden = !sidebarHidden; applyLayout(); if (cm) cm.refresh(); return; }
+  if (e.key === '?' && !(cm && cm.hasFocus()) &&
+      ['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName) < 0){
+    e.preventDefault();
+    openModal('help-modal');
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   TEMPLATE & BOOT
+   ═══════════════════════════════════════════════════════════════════ */
+const TEMPLATE_SOURCE = '@title My Game\n' +
+'@author Your Name\n' +
+'@start start\n' +
+'\n' +
+'// ─────────────────────────────────────────────────────────────\n' +
+'// Welcome to tgame studio — format 2.\n' +
+'//\n' +
+'// Replace this template with your own game. The language in one breath:\n' +
+'//\n' +
+'//     :: name              start a passage (a place)\n' +
+'//     plain text           narration, shown to the player\n' +
+'//     * Label -> target    a choice that jumps to another passage\n' +
+'//     * Label [effect]     a choice that stays in place\n' +
+'//     ? question [var]     ask the player a question\n' +
+'//     ...                  pause half a second (or: ... 800, ... 2s)\n' +
+'//     ~type / ~normal      toggle the typewriter effect\n' +
+'//     [get X] [drop X]     inventory\n' +
+'//     if has X: ... end    check inventory\n' +
+'//     @set x = 0           declare a variable\n' +
+'//     @list clues          declare a list\n' +
+'//     {variable}           insert a value into text\n' +
+'//     \\-> or \\*           escape — render as literal text\n' +
+'//\n' +
+'// Press ? for the full reference, or open an Example from the\n' +
+'// activity rail on the left to see a finished game.\n' +
+'// ─────────────────────────────────────────────────────────────\n' +
+'\n' +
+'@set score = 0\n' +
+'\n' +
+':: start\n' +
+'Replace this line with your opening paragraph.\n' +
+'\n' +
+'* Go somewhere -> somewhere\n' +
+'* Finish here -> END\n' +
+'\n' +
+':: somewhere\n' +
+'You went somewhere. Congratulations!\n' +
+'\n' +
+'Your score is {score}.\n' +
+'\n' +
+'* Back to the start -> start\n' +
+'* Finish -> END\n';
+
+(function boot(){
+  let source = TEMPLATE_SOURCE;
+  let name = 'untitled.tgame';
+  try {
+    const saved = localStorage.getItem('tgame.source');
+    const savedName = localStorage.getItem('tgame.name');
+    if (saved && saved.trim()){ source = saved; name = savedName || name; }
+  } catch(e){}
+
+  initEditor();
+  applySource(source);
+  applyLayout();
+  setFileName(name);
+  runGame();
+  clearDirty();
+  if (cm) cm.focus();
+
+  let seen = false;
+  try { seen = !!localStorage.getItem('tgame.seen'); } catch(e){}
+  if (!seen) setTimeout(function(){ openModal('welcome-modal'); }, 350);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,4646 @@
+{
+ "generated_by": "runtime.js",
+ "cases": [
+  {
+   "name": "example:cave",
+   "source": "@format 3\n@title The Cave\n@author You\n@start entrance\n\n@set score = 0\n\n:: entrance\nThe cave mouth yawns open in the hillside.\nCold air spills out, smelling of wet stone.\n\nif not has lamp:\nA rusted brass lamp lies half-buried in the dirt.\n* Take the lamp -> entrance [get lamp, score += 5]\nend\n\n* Go north into the cave -> dark_hall\n* Walk back to the village -> village\n\n:: dark_hall\nif has lamp:\nBy the lamp's thin light you see a door to the east\nand a low passage leading north.\n* Open the door -> treasure\n* Follow the passage -> deep\nelse:\nIt's pitch black in here. Something is breathing,\nslowly, somewhere ahead of you.\n* Retreat -> entrance\nend\n\n:: deep\nThe passage narrows and then stops entirely.\nSomething glitters in the rock at eye level.\n* Pry it loose -> treasure [get gem, score += 50]\n* Go back -> dark_hall\n\n:: treasure\nGold. Actual gold, warm to the touch.\nYou are rich, and possibly cursed.\n\nYou are carrying {inventory}.\nYour score: {score}\n-> END\n\n:: village\nThe village is warm and boring. You go home.\n\nYour score: {score}\n-> END\n",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "The village is warm and boring. You go home.",
+      "Your score: 5"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 5
+     },
+     "lists": {
+      "inventory": [
+       "lamp"
+      ]
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      1,
+      0,
+      1,
+      0,
+      2
+     ],
+     "lines": [
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "It's pitch black in here. Something is breathing, slowly, somewhere ahead of you.",
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "It's pitch black in here. Something is breathing, slowly, somewhere ahead of you.",
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "The village is warm and boring. You go home.",
+      "Your score: 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "The village is warm and boring. You go home.",
+      "Your score: 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "The village is warm and boring. You go home.",
+      "Your score: 5"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 5
+     },
+     "lists": {
+      "inventory": [
+       "lamp"
+      ]
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      1,
+      0,
+      1,
+      0,
+      1,
+      0,
+      2
+     ],
+     "lines": [
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "It's pitch black in here. Something is breathing, slowly, somewhere ahead of you.",
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "It's pitch black in here. Something is breathing, slowly, somewhere ahead of you.",
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "It's pitch black in here. Something is breathing, slowly, somewhere ahead of you.",
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "The village is warm and boring. You go home.",
+      "Your score: 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "The cave mouth yawns open in the hillside. Cold air spills out, smelling of wet stone.",
+      "A rusted brass lamp lies half-buried in the dirt.",
+      "The village is warm and boring. You go home.",
+      "Your score: 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "example:rock",
+   "source": "@format 3\n@title The Magic Rock\n@start beach\n\n@set polished = false\n@set score = 0\n\n:: beach\nYou find a dull grey rock on the sand.\n\nif polished:\nThe rock gleams faintly in the afternoon sun.\nelse:\nIt's just an ordinary rock. Boring, even.\nend\n\n* Polish the rock -> beach [polished = true, score += 1]\n* Throw it in the sea -> sea\n* Put it in your pocket -> pocket [get rock]\n\n:: sea\nYou hurl the rock into the waves. It sinks immediately.\nSomewhere, a fish is disappointed.\n\nScore: {score}\n-> END\n\n:: pocket\nYou put the rock in your pocket. It is a good rock.\n\nScore: {score}\n-> END\n",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0,
+      0,
+      1
+     ],
+     "lines": [
+      "You find a dull grey rock on the sand.",
+      "It's just an ordinary rock. Boring, even.",
+      "You find a dull grey rock on the sand.",
+      "The rock gleams faintly in the afternoon sun.",
+      "You find a dull grey rock on the sand.",
+      "The rock gleams faintly in the afternoon sun.",
+      "You hurl the rock into the waves. It sinks immediately. Somewhere, a fish is disappointed.",
+      "Score: 2"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "polished": true,
+      "score": 2
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      1
+     ],
+     "lines": [
+      "You find a dull grey rock on the sand.",
+      "It's just an ordinary rock. Boring, even.",
+      "You hurl the rock into the waves. It sinks immediately. Somewhere, a fish is disappointed.",
+      "Score: 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "polished": false,
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "You find a dull grey rock on the sand.",
+      "It's just an ordinary rock. Boring, even.",
+      "You put the rock in your pocket. It is a good rock.",
+      "Score: 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "polished": false,
+      "score": 0
+     },
+     "lists": {
+      "inventory": [
+       "rock"
+      ]
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "You find a dull grey rock on the sand.",
+      "It's just an ordinary rock. Boring, even.",
+      "You find a dull grey rock on the sand.",
+      "The rock gleams faintly in the afternoon sun.",
+      "You hurl the rock into the waves. It sinks immediately. Somewhere, a fish is disappointed.",
+      "Score: 1"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "polished": true,
+      "score": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      1
+     ],
+     "lines": [
+      "You find a dull grey rock on the sand.",
+      "It's just an ordinary rock. Boring, even.",
+      "You hurl the rock into the waves. It sinks immediately. Somewhere, a fish is disappointed.",
+      "Score: 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "polished": false,
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "You find a dull grey rock on the sand.",
+      "It's just an ordinary rock. Boring, even.",
+      "You put the rock in your pocket. It is a good rock.",
+      "Score: 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "polished": false,
+      "score": 0
+     },
+     "lists": {
+      "inventory": [
+       "rock"
+      ]
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "example:counter",
+   "source": "@format 3\n@title Counter\n@start start\n\n@set n = 0\n@set clicks = 0\n\n:: start\nThe counter shows: {n}\n\nYou've pressed the button {clicks} {clicks == 1 | time | times}.\n\n* Press the button [n += 1, clicks += 1]\n* Reset [n = 0, clicks = 0]\n* Stop -> END\n",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0,
+      0,
+      1,
+      0,
+      2
+     ],
+     "lines": [
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 1",
+      "You've pressed the button 1 time.",
+      "The counter shows: 2",
+      "You've pressed the button 2 times.",
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 1",
+      "You've pressed the button 1 time."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "clicks": 1,
+      "n": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      1,
+      0,
+      1,
+      2
+     ],
+     "lines": [
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 1",
+      "You've pressed the button 1 time.",
+      "The counter shows: 0",
+      "You've pressed the button 0 times."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "clicks": 0,
+      "n": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "The counter shows: 0",
+      "You've pressed the button 0 times."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "clicks": 0,
+      "n": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0,
+      1,
+      1,
+      2
+     ],
+     "lines": [
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 1",
+      "You've pressed the button 1 time.",
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 0",
+      "You've pressed the button 0 times."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "clicks": 0,
+      "n": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      2
+     ],
+     "lines": [
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 1",
+      "You've pressed the button 1 time.",
+      "The counter shows: 0",
+      "You've pressed the button 0 times.",
+      "The counter shows: 1",
+      "You've pressed the button 1 time."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "clicks": 1,
+      "n": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "The counter shows: 0",
+      "You've pressed the button 0 times."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "clicks": 0,
+      "n": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "example:name",
+   "source": "@format 3\n@title Your Name\n@start start\n\n:: start\nA robed figure sits at a desk. They look up.\n\n? What is your name? [name:text] -> age\n\n:: age\n\"Welcome, {name}.\"\n\n? And how many winters have you seen? [winters:number] -> greeting\n\n:: greeting\nThey hand you a key.\n[get key]\n\nif winters >= 60:\n\"A long road, {name}.\"\nelse:\n\"Young, still.\"\nend\n\nYour inventory: {inventory}.\n-> END\n",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      "Ada",
+      "42"
+     ],
+     "lines": [
+      "A robed figure sits at a desk. They look up.",
+      "What is your name?",
+      "\"Welcome, Ada.\"",
+      "And how many winters have you seen?",
+      "They hand you a key.",
+      "\"Young, still.\"",
+      "Your inventory: key."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "winters": 42
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ]
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      "Ada",
+      "42"
+     ],
+     "lines": [
+      "A robed figure sits at a desk. They look up.",
+      "What is your name?",
+      "\"Welcome, Ada.\"",
+      "And how many winters have you seen?",
+      "They hand you a key.",
+      "\"Young, still.\"",
+      "Your inventory: key."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "winters": 42
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ]
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      "Ada",
+      "42"
+     ],
+     "lines": [
+      "A robed figure sits at a desk. They look up.",
+      "What is your name?",
+      "\"Welcome, Ada.\"",
+      "And how many winters have you seen?",
+      "They hand you a key.",
+      "\"Young, still.\"",
+      "Your inventory: key."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "winters": 42
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ]
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      "Ada",
+      "42"
+     ],
+     "lines": [
+      "A robed figure sits at a desk. They look up.",
+      "What is your name?",
+      "\"Welcome, Ada.\"",
+      "And how many winters have you seen?",
+      "They hand you a key.",
+      "\"Young, still.\"",
+      "Your inventory: key."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "winters": 42
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ]
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      "Ada",
+      "42"
+     ],
+     "lines": [
+      "A robed figure sits at a desk. They look up.",
+      "What is your name?",
+      "\"Welcome, Ada.\"",
+      "And how many winters have you seen?",
+      "They hand you a key.",
+      "\"Young, still.\"",
+      "Your inventory: key."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "winters": 42
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ]
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      "Ada",
+      "42"
+     ],
+     "lines": [
+      "A robed figure sits at a desk. They look up.",
+      "What is your name?",
+      "\"Welcome, Ada.\"",
+      "And how many winters have you seen?",
+      "They hand you a key.",
+      "\"Young, still.\"",
+      "Your inventory: key."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "winters": 42
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ]
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "example:mood",
+   "source": "@format 3\n@title The Empty House\n@start hall\n\n@typewriter slow\n\n:: hall\nYou push the door open. It swings inward without a sound.\n\n...\n\nThe hallway is long and narrow. Dust hangs in the air,\nlit by a single window at the far end.\n\n...\n\n~type\nSomewhere in the house, a clock is ticking.\n~normal\n\n... 1500\n\nThen it stops.\n\n* Walk down the hall -> hall_end\n* Leave -> END\n\n:: hall_end\nThe hallway is much longer than it looked from the door.\n-> END\n",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "You push the door open. It swings inward without a sound.",
+      "The hallway is long and narrow. Dust hangs in the air, lit by a single window at the far end.",
+      "Somewhere in the house, a clock is ticking.",
+      "Then it stops.",
+      "The hallway is much longer than it looked from the door."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "You push the door open. It swings inward without a sound.",
+      "The hallway is long and narrow. Dust hangs in the air, lit by a single window at the far end.",
+      "Somewhere in the house, a clock is ticking.",
+      "Then it stops.",
+      "The hallway is much longer than it looked from the door."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "You push the door open. It swings inward without a sound.",
+      "The hallway is long and narrow. Dust hangs in the air, lit by a single window at the far end.",
+      "Somewhere in the house, a clock is ticking.",
+      "Then it stops.",
+      "The hallway is much longer than it looked from the door."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "You push the door open. It swings inward without a sound.",
+      "The hallway is long and narrow. Dust hangs in the air, lit by a single window at the far end.",
+      "Somewhere in the house, a clock is ticking.",
+      "Then it stops.",
+      "The hallway is much longer than it looked from the door."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "You push the door open. It swings inward without a sound.",
+      "The hallway is long and narrow. Dust hangs in the air, lit by a single window at the far end.",
+      "Somewhere in the house, a clock is ticking.",
+      "Then it stops.",
+      "The hallway is much longer than it looked from the door."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "You push the door open. It swings inward without a sound.",
+      "The hallway is long and narrow. Dust hangs in the air, lit by a single window at the far end.",
+      "Somewhere in the house, a clock is ticking.",
+      "Then it stops.",
+      "The hallway is much longer than it looked from the door."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "example:parser",
+   "source": "@format 3\n@title Parser Demo\n@start hall\n@parser\n@ignore the a an\n\n:: hall\nA narrow hall. A DOOR is east, and a LAMP sits on a table.\n\n* Look at the lamp | examine lamp, x lamp -> hall\n* Take the lamp | get lamp, grab lamp -> hall [get lamp]\n* Open the door | go east, east -> corridor\n\n// Type \"lamp\" to see disambiguation. \"help\", \"undo\" and \"save\" work too.\n\n:: corridor\nYou step through into a brighter corridor.\n\n* Go back | west -> hall\n* Continue -> END\n",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0,
+      0,
+      1,
+      0,
+      2,
+      1
+     ],
+     "lines": [
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": [
+       "lamp"
+      ]
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      1,
+      0,
+      1,
+      2,
+      0,
+      2,
+      0,
+      0,
+      2,
+      0,
+      2,
+      0,
+      1,
+      0,
+      2,
+      0,
+      2,
+      1
+     ],
+     "lines": [
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": [
+       "lamp"
+      ]
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      2,
+      0,
+      2,
+      0,
+      0,
+      0,
+      1,
+      1,
+      2,
+      1
+     ],
+     "lines": [
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": [
+       "lamp"
+      ]
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0,
+      1,
+      1,
+      2,
+      1
+     ],
+     "lines": [
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": [
+       "lamp"
+      ]
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      2,
+      1
+     ],
+     "lines": [
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": [
+       "lamp"
+      ]
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      2,
+      0,
+      1,
+      2,
+      0,
+      2,
+      1
+     ],
+     "lines": [
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor.",
+      "A narrow hall. A DOOR is east, and a LAMP sits on a table.",
+      "You step through into a brighter corridor."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": [
+       "lamp"
+      ]
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "example:tunnels",
+   "source": "@format 3\n@title Tunnels and Once\n@start gate\n\n@set coins = 3\n@list notes\n\n// Consecutive lines form one paragraph. A blank line starts a new one.\n// A line ending in a backslash is a hard line break.\n\n:: gate #hub\nThe gate stands open. You have {coins} {coins == 1 | coin | coins}\\\nin your pocket.\n\n>> weather\n\n* Pick up the coin in the dirt -> gate [coins += 1, once]\n* Read the sign -> sign\n* Walk through -> END\n\n// A passage called with >> is a snippet: text and effects only.\n:: weather #snippet\n{if coins > 3}The sun is out and the coins feel heavy.{else}Clouds gather over the gate.{end}\n\n:: sign\n[enter notes add sign]\n[once coins += 1]\n```\n   _____________\n  |  WELCOME    |\n  |  TRAVELLER  |\n  |_____________|\n```\n\nThe sign is spotted with rust. Notes so far: {notes}.\n\n* Back to the gate -> gate\n",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "The gate stands open. You have 3 coins\nin your pocket.",
+      "Clouds gather over the gate.",
+      "The gate stands open. You have 4 coins\nin your pocket.",
+      "The sun is out and the coins feel heavy."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "coins": 4
+     },
+     "lists": {
+      "inventory": [],
+      "notes": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      1,
+      0,
+      1,
+      0,
+      2
+     ],
+     "lines": [
+      "The gate stands open. You have 3 coins\nin your pocket.",
+      "Clouds gather over the gate.",
+      "   _____________\n  |  WELCOME    |\n  |  TRAVELLER  |\n  |_____________|",
+      "The sign is spotted with rust. Notes so far: sign.",
+      "The gate stands open. You have 4 coins\nin your pocket.",
+      "The sun is out and the coins feel heavy.",
+      "   _____________\n  |  WELCOME    |\n  |  TRAVELLER  |\n  |_____________|",
+      "The sign is spotted with rust. Notes so far: sign.",
+      "The gate stands open. You have 4 coins\nin your pocket.",
+      "The sun is out and the coins feel heavy."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "coins": 4
+     },
+     "lists": {
+      "inventory": [],
+      "notes": [
+       "sign"
+      ]
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "The gate stands open. You have 3 coins\nin your pocket.",
+      "Clouds gather over the gate."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "coins": 3
+     },
+     "lists": {
+      "inventory": [],
+      "notes": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "The gate stands open. You have 3 coins\nin your pocket.",
+      "Clouds gather over the gate.",
+      "The gate stands open. You have 4 coins\nin your pocket.",
+      "The sun is out and the coins feel heavy."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "coins": 4
+     },
+     "lists": {
+      "inventory": [],
+      "notes": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      1,
+      0,
+      1,
+      0,
+      1,
+      0,
+      2
+     ],
+     "lines": [
+      "The gate stands open. You have 3 coins\nin your pocket.",
+      "Clouds gather over the gate.",
+      "   _____________\n  |  WELCOME    |\n  |  TRAVELLER  |\n  |_____________|",
+      "The sign is spotted with rust. Notes so far: sign.",
+      "The gate stands open. You have 4 coins\nin your pocket.",
+      "The sun is out and the coins feel heavy.",
+      "   _____________\n  |  WELCOME    |\n  |  TRAVELLER  |\n  |_____________|",
+      "The sign is spotted with rust. Notes so far: sign.",
+      "The gate stands open. You have 4 coins\nin your pocket.",
+      "The sun is out and the coins feel heavy.",
+      "   _____________\n  |  WELCOME    |\n  |  TRAVELLER  |\n  |_____________|",
+      "The sign is spotted with rust. Notes so far: sign.",
+      "The gate stands open. You have 4 coins\nin your pocket.",
+      "The sun is out and the coins feel heavy."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "coins": 4
+     },
+     "lists": {
+      "inventory": [],
+      "notes": [
+       "sign"
+      ]
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "The gate stands open. You have 3 coins\nin your pocket.",
+      "Clouds gather over the gate."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "coins": 3
+     },
+     "lists": {
+      "inventory": [],
+      "notes": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "example:hello",
+   "source": "@format 3\n@title Hello, World\n@start start\n\n:: start\nHello, world!\n\nThis is a tgame — a tiny interactive story.\n\n* Say goodbye -> END\n* Say hello again -> start\n",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "Hello, world!",
+      "This is a tgame — a tiny interactive story."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "Hello, world!",
+      "This is a tgame — a tiny interactive story."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "Hello, world!",
+      "This is a tgame — a tiny interactive story."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "Hello, world!",
+      "This is a tgame — a tiny interactive story."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "Hello, world!",
+      "This is a tgame — a tiny interactive story."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "Hello, world!",
+      "This is a tgame — a tiny interactive story."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "template",
+   "source": "@format 3\n@title My Game\n@author Your Name\n@start start\n\n// ─────────────────────────────────────────────────────────────\n// Welcome to tgame studio — format 3.\n//\n//     :: name              start a passage (a place)\n//     plain text           narration; consecutive lines form a paragraph\n//     (blank line)         new paragraph\n//     * Label -> target    a choice that jumps to another passage\n//     * Label [effect]     a choice that stays in place\n//     * Label [once]       a choice that disappears after it is taken\n//     ? question [var]     ask the player a question\n//     ...                  pause half a second (or: ... 800, ... 2s)\n//     ~type / ~normal      toggle the typewriter effect\n//     [get X] [drop X]     inventory\n//     if has X: ... end    check inventory\n//     >> name              run another passage in place (a snippet)\n//     @set x = 0           declare a variable\n//     @list clues          declare a list\n//     {variable}           insert a value into text\n//     \\-> or \\*            escape: render as literal text\n//\n// Press ? for the full reference, or open an Example from the\n// activity rail on the left to see a finished game.\n// ─────────────────────────────────────────────────────────────\n\n@set score = 0\n\n:: start\nReplace this line with your opening paragraph.\n\n* Go somewhere -> somewhere\n* Finish here -> END\n\n:: somewhere\nYou went somewhere. Congratulations!\n\nYour score is {score}.\n\n* Back to the start -> start\n* Finish -> END\n",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "Replace this line with your opening paragraph.",
+      "You went somewhere. Congratulations!",
+      "Your score is 0."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      0,
+      0,
+      1
+     ],
+     "lines": [
+      "Replace this line with your opening paragraph.",
+      "You went somewhere. Congratulations!",
+      "Your score is 0.",
+      "Replace this line with your opening paragraph."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      0,
+      0,
+      0,
+      0,
+      1
+     ],
+     "lines": [
+      "Replace this line with your opening paragraph.",
+      "You went somewhere. Congratulations!",
+      "Your score is 0.",
+      "Replace this line with your opening paragraph.",
+      "You went somewhere. Congratulations!",
+      "Your score is 0.",
+      "Replace this line with your opening paragraph."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "Replace this line with your opening paragraph.",
+      "You went somewhere. Congratulations!",
+      "Your score is 0."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "Replace this line with your opening paragraph.",
+      "You went somewhere. Congratulations!",
+      "Your score is 0."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      0,
+      0,
+      1
+     ],
+     "lines": [
+      "Replace this line with your opening paragraph.",
+      "You went somewhere. Congratulations!",
+      "Your score is 0.",
+      "Replace this line with your opening paragraph."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "score": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:arithmetic",
+   "source": "@format 3\n@set a = 0.1 + 0.2\n@set b = 7 / 2\n@set c = 7 % 3\n@set d = -7 % 3\n@set e = \"1\" == 1\n@set f = 10 / 0\n@set g = 0 / 0\n@set h = 1 / 3\n@set big = 2 * 100000000000\n@set s = \"ab\" + 1 + 2\n@set t = 1 + 2 + \"x\"\n@set u = 5 > \"4\"\n@set v = \"b\" > \"a\"\n@set w = true + 1\n@set x = 0.000001 * 0.5\n@set y = 123456789 * 987654321\n@set z = 1 / 7 * 7\n:: a\n{a}|{b}|{c}|{d}|{e}|{f}|{g}|{h}|{big}|{s}|{t}|{u}|{v}|{w}|{x}|{y}|{z}\n-> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [],
+     "lines": [
+      "0.30000000000000004|3.5|1|-1|true|Infinity|NaN|0.3333333333333333|200000000000|ab12|3x|true|true|2|5e-7|121932631112635260|1"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "a": 0.30000000000000004,
+      "b": 3.5,
+      "big": 200000000000,
+      "c": 1,
+      "d": -1,
+      "e": true,
+      "f": "Infinity",
+      "g": "NaN",
+      "h": 0.3333333333333333,
+      "s": "ab12",
+      "t": "3x",
+      "u": true,
+      "v": true,
+      "w": 2,
+      "x": 5e-7,
+      "y": 121932631112635260,
+      "z": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [],
+     "lines": [
+      "0.30000000000000004|3.5|1|-1|true|Infinity|NaN|0.3333333333333333|200000000000|ab12|3x|true|true|2|5e-7|121932631112635260|1"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "a": 0.30000000000000004,
+      "b": 3.5,
+      "big": 200000000000,
+      "c": 1,
+      "d": -1,
+      "e": true,
+      "f": "Infinity",
+      "g": "NaN",
+      "h": 0.3333333333333333,
+      "s": "ab12",
+      "t": "3x",
+      "u": true,
+      "v": true,
+      "w": 2,
+      "x": 5e-7,
+      "y": 121932631112635260,
+      "z": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [],
+     "lines": [
+      "0.30000000000000004|3.5|1|-1|true|Infinity|NaN|0.3333333333333333|200000000000|ab12|3x|true|true|2|5e-7|121932631112635260|1"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "a": 0.30000000000000004,
+      "b": 3.5,
+      "big": 200000000000,
+      "c": 1,
+      "d": -1,
+      "e": true,
+      "f": "Infinity",
+      "g": "NaN",
+      "h": 0.3333333333333333,
+      "s": "ab12",
+      "t": "3x",
+      "u": true,
+      "v": true,
+      "w": 2,
+      "x": 5e-7,
+      "y": 121932631112635260,
+      "z": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [],
+     "lines": [
+      "0.30000000000000004|3.5|1|-1|true|Infinity|NaN|0.3333333333333333|200000000000|ab12|3x|true|true|2|5e-7|121932631112635260|1"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "a": 0.30000000000000004,
+      "b": 3.5,
+      "big": 200000000000,
+      "c": 1,
+      "d": -1,
+      "e": true,
+      "f": "Infinity",
+      "g": "NaN",
+      "h": 0.3333333333333333,
+      "s": "ab12",
+      "t": "3x",
+      "u": true,
+      "v": true,
+      "w": 2,
+      "x": 5e-7,
+      "y": 121932631112635260,
+      "z": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [],
+     "lines": [
+      "0.30000000000000004|3.5|1|-1|true|Infinity|NaN|0.3333333333333333|200000000000|ab12|3x|true|true|2|5e-7|121932631112635260|1"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "a": 0.30000000000000004,
+      "b": 3.5,
+      "big": 200000000000,
+      "c": 1,
+      "d": -1,
+      "e": true,
+      "f": "Infinity",
+      "g": "NaN",
+      "h": 0.3333333333333333,
+      "s": "ab12",
+      "t": "3x",
+      "u": true,
+      "v": true,
+      "w": 2,
+      "x": 5e-7,
+      "y": 121932631112635260,
+      "z": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [],
+     "lines": [
+      "0.30000000000000004|3.5|1|-1|true|Infinity|NaN|0.3333333333333333|200000000000|ab12|3x|true|true|2|5e-7|121932631112635260|1"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "a": 0.30000000000000004,
+      "b": 3.5,
+      "big": 200000000000,
+      "c": 1,
+      "d": -1,
+      "e": true,
+      "f": "Infinity",
+      "g": "NaN",
+      "h": 0.3333333333333333,
+      "s": "ab12",
+      "t": "3x",
+      "u": true,
+      "v": true,
+      "w": 2,
+      "x": 5e-7,
+      "y": 121932631112635260,
+      "z": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:effects",
+   "source": "@format 3\n@set n = 5\n@set s = \"a\"\n@list tags\n:: a\n[n += 2, n *= 3, n -= 1, n /= 4, n %= 3]\n[s += \"b\", s += 1]\n[n++]\n[n--]\n[n--]\n[tags add one, tags add One, tags add two, tags remove ONE]\n[get Lamp, get lamp, get key]\n[drop LAMP]\nn={n} s={s} tags={tags} inv={inventory} count={count tags}\n{has key | key | nokey} {has lamp | lamp | nolamp} {tags has TWO | two | notwo}\n-> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [],
+     "lines": [
+      "n=1 s=ab1 tags=two inv=key count=1 key nolamp two"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 1,
+      "s": "ab1"
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ],
+      "tags": [
+       "two"
+      ]
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [],
+     "lines": [
+      "n=1 s=ab1 tags=two inv=key count=1 key nolamp two"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 1,
+      "s": "ab1"
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ],
+      "tags": [
+       "two"
+      ]
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [],
+     "lines": [
+      "n=1 s=ab1 tags=two inv=key count=1 key nolamp two"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 1,
+      "s": "ab1"
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ],
+      "tags": [
+       "two"
+      ]
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [],
+     "lines": [
+      "n=1 s=ab1 tags=two inv=key count=1 key nolamp two"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 1,
+      "s": "ab1"
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ],
+      "tags": [
+       "two"
+      ]
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [],
+     "lines": [
+      "n=1 s=ab1 tags=two inv=key count=1 key nolamp two"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 1,
+      "s": "ab1"
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ],
+      "tags": [
+       "two"
+      ]
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [],
+     "lines": [
+      "n=1 s=ab1 tags=two inv=key count=1 key nolamp two"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 1,
+      "s": "ab1"
+     },
+     "lists": {
+      "inventory": [
+       "key"
+      ],
+      "tags": [
+       "two"
+      ]
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:random",
+   "source": "@format 3\n@set r0 = random(1, 6)\n@set r1 = random(-5, 5)\n@set r2 = random(1, 1000000)\n:: a\n[x = random(1, 6)]\n{r0} {r1} {r2} {x}\n* again -> a\n* more [y = random(0, 1)]\n* end -> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ],
+    [
+     6,
+     "warn",
+     "variable \"x\" is used but never declared with @set"
+    ],
+    [
+     9,
+     "warn",
+     "variable \"y\" is used but never declared with @set"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0,
+      0,
+      1,
+      0,
+      2
+     ],
+     "lines": [
+      "4 -5 527448 6",
+      "4 -5 527448 6",
+      "4 -5 527448 2",
+      "4 -5 527448 5",
+      "4 -5 527448 3"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "r0": 4,
+      "r1": -5,
+      "r2": 527448,
+      "x": 3,
+      "y": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      1,
+      0,
+      1,
+      2
+     ],
+     "lines": [
+      "5 -2 285297 4",
+      "5 -2 285297 4",
+      "5 -2 285297 3",
+      "5 -2 285297 5"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "r0": 5,
+      "r1": -2,
+      "r2": 285297,
+      "x": 5,
+      "y": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "5 -5 456193 1"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "r0": 5,
+      "r1": -5,
+      "r2": 456193,
+      "x": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0,
+      1,
+      1,
+      2
+     ],
+     "lines": [
+      "4 -1 852466 5",
+      "4 -1 852466 2",
+      "4 -1 852466 2",
+      "4 -1 852466 6"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "r0": 4,
+      "r1": -1,
+      "r2": 852466,
+      "x": 6,
+      "y": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      2
+     ],
+     "lines": [
+      "6 0 605232 5",
+      "6 0 605232 1",
+      "6 0 605232 6",
+      "6 0 605232 6",
+      "6 0 605232 3",
+      "6 0 605232 6",
+      "6 0 605232 5"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "r0": 6,
+      "r1": 0,
+      "r2": 605232,
+      "x": 5,
+      "y": 0
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "3 -5 939034 5"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "r0": 3,
+      "r1": -5,
+      "r2": 939034,
+      "x": 5
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:unicode",
+   "source": "@format 3\n@set puntos = 2\n@set ñandú = \"sí\"\n@start inicio\n:: inicio #ñ\n{puntos} puntos y {ñandú}\n* Ir al jardín | ir, jardín -> jardín\n:: jardín\nUn jardín.\n-> END",
+   "lint": [],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "2 puntos y sí",
+      "Un jardín."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "puntos": 2,
+      "ñandú": "sí"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "2 puntos y sí",
+      "Un jardín."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "puntos": 2,
+      "ñandú": "sí"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "2 puntos y sí",
+      "Un jardín."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "puntos": 2,
+      "ñandú": "sí"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "2 puntos y sí",
+      "Un jardín."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "puntos": 2,
+      "ñandú": "sí"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "2 puntos y sí",
+      "Un jardín."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "puntos": 2,
+      "ñandú": "sí"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "2 puntos y sí",
+      "Un jardín."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "puntos": 2,
+      "ñandú": "sí"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:layout",
+   "source": "@format 3\n:: a\nline one\nline two\n\nnext para\nhard\\\nbreak\n\n```\n  art {x}\n    more\n```\ndone\n* go -> b\n:: b\n\\if literal\n\\end\n\\// slash\nsee http://x // y\na \\* b \\{c\\} d\n*it* and **bold**\n-> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "line one line two",
+      "next para hard\nbreak",
+      "  art {x}\n    more",
+      "done",
+      "if literal end // slash see http://x // y a * b {c} d"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "line one line two",
+      "next para hard\nbreak",
+      "  art {x}\n    more",
+      "done",
+      "if literal end // slash see http://x // y a * b {c} d"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "line one line two",
+      "next para hard\nbreak",
+      "  art {x}\n    more",
+      "done",
+      "if literal end // slash see http://x // y a * b {c} d"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "line one line two",
+      "next para hard\nbreak",
+      "  art {x}\n    more",
+      "done",
+      "if literal end // slash see http://x // y a * b {c} d"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "line one line two",
+      "next para hard\nbreak",
+      "  art {x}\n    more",
+      "done",
+      "if literal end // slash see http://x // y a * b {c} d"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      0
+     ],
+     "lines": [
+      "line one line two",
+      "next para hard\nbreak",
+      "  art {x}\n    more",
+      "done",
+      "if literal end // slash see http://x // y a * b {c} d"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:legacy",
+   "source": "@format 2\n:: a\none\ntwo\n\nthree\n-> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [],
+     "lines": [
+      "one",
+      "two",
+      "three"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [],
+     "lines": [
+      "one",
+      "two",
+      "three"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [],
+     "lines": [
+      "one",
+      "two",
+      "three"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [],
+     "lines": [
+      "one",
+      "two",
+      "three"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [],
+     "lines": [
+      "one",
+      "two",
+      "three"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [],
+     "lines": [
+      "one",
+      "two",
+      "three"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:conditions",
+   "source": "@format 3\n@set score = 3\n@set name = \"Ada\"\n:: a\nif not has lamp and score > 1:\nA\nelse:\nB\nend\nif score == 3 and name == \"Ada\" or false:\nC\nend\nif not (score > 5 or score < 0):\nD\nend\n{if score > 2}E{if score > 100}x{else}F{end}G{else}H{end}\n{score > 2 | big | small} {score | truthy | falsy} {name == \"Bob\" | bob}\nif visited a:\nV\nend\nif visits == 1:\nfirst\nend\n-> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [],
+     "lines": [
+      "A",
+      "C",
+      "D",
+      "EFG big truthy ",
+      "V",
+      "first"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "score": 3
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [],
+     "lines": [
+      "A",
+      "C",
+      "D",
+      "EFG big truthy ",
+      "V",
+      "first"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "score": 3
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [],
+     "lines": [
+      "A",
+      "C",
+      "D",
+      "EFG big truthy ",
+      "V",
+      "first"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "score": 3
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [],
+     "lines": [
+      "A",
+      "C",
+      "D",
+      "EFG big truthy ",
+      "V",
+      "first"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "score": 3
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [],
+     "lines": [
+      "A",
+      "C",
+      "D",
+      "EFG big truthy ",
+      "V",
+      "first"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "score": 3
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [],
+     "lines": [
+      "A",
+      "C",
+      "D",
+      "EFG big truthy ",
+      "V",
+      "first"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "name": "Ada",
+      "score": 3
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:snippets",
+   "source": "@format 3\n@set n = 0\n@list notes\n:: a #hub\n[enter n += 1]\n[once n += 10]\nn={n}\n>> sn\n* Take [n += 100, once]\n* Stay [n += 0]\n* Leave -> END\n:: sn\n[notes add seen]\nnotes: {notes}",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "n=11",
+      "notes: seen",
+      "n=111",
+      "notes: seen"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 111
+     },
+     "lists": {
+      "inventory": [],
+      "notes": [
+       "seen"
+      ]
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      1,
+      0,
+      1
+     ],
+     "lines": [
+      "n=11",
+      "notes: seen",
+      "n=11",
+      "notes: seen",
+      "n=111",
+      "notes: seen"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 111
+     },
+     "lists": {
+      "inventory": [],
+      "notes": [
+       "seen"
+      ]
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "n=11",
+      "notes: seen"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 11
+     },
+     "lists": {
+      "inventory": [],
+      "notes": [
+       "seen"
+      ]
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      0,
+      1
+     ],
+     "lines": [
+      "n=11",
+      "notes: seen",
+      "n=111",
+      "notes: seen"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 111
+     },
+     "lists": {
+      "inventory": [],
+      "notes": [
+       "seen"
+      ]
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      1,
+      1,
+      1,
+      0,
+      1
+     ],
+     "lines": [
+      "n=11",
+      "notes: seen",
+      "n=11",
+      "notes: seen",
+      "n=11",
+      "notes: seen",
+      "n=11",
+      "notes: seen",
+      "n=111",
+      "notes: seen"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 111
+     },
+     "lists": {
+      "inventory": [],
+      "notes": [
+       "seen"
+      ]
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      2
+     ],
+     "lines": [
+      "n=11",
+      "notes: seen"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "n": 11
+     },
+     "lists": {
+      "inventory": [],
+      "notes": [
+       "seen"
+      ]
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:typed",
+   "source": "@format 3\n:: a\n? Name? [name:text] -> b\n:: b\n? Age? [age:number]\n? Anything? [x]\nYou are {name}, {age}, {x}.\n-> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [
+      "Ada",
+      "42",
+      "abc"
+     ],
+     "lines": [
+      "Name?",
+      "Age?",
+      "Anything?",
+      "You are Ada, 42, abc."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "age": 42,
+      "name": "Ada",
+      "x": "abc"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [
+      "Ada",
+      "42",
+      "abc"
+     ],
+     "lines": [
+      "Name?",
+      "Age?",
+      "Anything?",
+      "You are Ada, 42, abc."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "age": 42,
+      "name": "Ada",
+      "x": "abc"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [
+      "Ada",
+      "42",
+      "abc"
+     ],
+     "lines": [
+      "Name?",
+      "Age?",
+      "Anything?",
+      "You are Ada, 42, abc."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "age": 42,
+      "name": "Ada",
+      "x": "abc"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [
+      "Ada",
+      "42",
+      "abc"
+     ],
+     "lines": [
+      "Name?",
+      "Age?",
+      "Anything?",
+      "You are Ada, 42, abc."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "age": 42,
+      "name": "Ada",
+      "x": "abc"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [
+      "Ada",
+      "42",
+      "abc"
+     ],
+     "lines": [
+      "Name?",
+      "Age?",
+      "Anything?",
+      "You are Ada, 42, abc."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "age": 42,
+      "name": "Ada",
+      "x": "abc"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [
+      "Ada",
+      "42",
+      "abc"
+     ],
+     "lines": [
+      "Name?",
+      "Age?",
+      "Anything?",
+      "You are Ada, 42, abc."
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "age": 42,
+      "name": "Ada",
+      "x": "abc"
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:errors",
+   "source": "@format 3\n@set bad = 1 +\n:: a\nif x:\n* x [wave] -> missing\n* y -> END [n +=]\n~bogus\n{if a}unclosed\n>> nowhere\n-> b\n:: b\n* c -> a\n:: a\ndup\n:: lonely\nnever reached\n-> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ],
+    [
+     2,
+     "error",
+     "@set: unexpected end of expression"
+    ],
+    [
+     3,
+     "error",
+     "passage \"a\" has 1 unclosed if block(s)"
+    ],
+    [
+     4,
+     "warn",
+     "variable \"x\" is used but never declared with @set"
+    ],
+    [
+     6,
+     "error",
+     "bad expression \"\": unexpected end of expression"
+    ],
+    [
+     6,
+     "warn",
+     "variable \"n\" is used but never declared with @set"
+    ],
+    [
+     7,
+     "warn",
+     "unknown mode \"~bogus\" — use ~type, ~normal, ~fast or ~slow (escape with \\~ to print it)"
+    ],
+    [
+     8,
+     "warn",
+     "passage \"a\" has an unbalanced {if …}…{end} in its text"
+    ],
+    [
+     8,
+     "warn",
+     "variable \"a\" is used but never declared with @set"
+    ],
+    [
+     11,
+     "warn",
+     "passage \"b\" is unreachable from @start"
+    ],
+    [
+     13,
+     "error",
+     "duplicate passage \"a\""
+    ],
+    [
+     15,
+     "warn",
+     "passage \"lonely\" is unreachable from @start"
+    ]
+   ],
+   "runs": []
+  },
+  {
+   "name": "extra:linthints",
+   "source": "@format 3\n@set Score = 0\n:: a\n{score} {Score}\n[nope = 1]\nif visited gone:\nx\nend\n-> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ],
+    [
+     4,
+     "warn",
+     "variable \"score\" is used but never declared with @set — did you mean \"Score\"? (variable names are case-sensitive)"
+    ],
+    [
+     5,
+     "warn",
+     "variable \"nope\" is used but never declared with @set"
+    ],
+    [
+     6,
+     "warn",
+     "\"visited gone\" refers to a passage that doesn't exist"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [],
+     "lines": [
+      " 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "Score": 0,
+      "nope": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [],
+     "lines": [
+      " 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "Score": 0,
+      "nope": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [],
+     "lines": [
+      " 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "Score": 0,
+      "nope": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [],
+     "lines": [
+      " 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "Score": 0,
+      "nope": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [],
+     "lines": [
+      " 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "Score": 0,
+      "nope": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [],
+     "lines": [
+      " 0"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {
+      "Score": 0,
+      "nope": 1
+     },
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:noformat",
+   "source": ":: a\nhi\n-> END",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @format directive — assuming format 3 (add \"@format 3\")"
+    ],
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ]
+   ],
+   "runs": [
+    {
+     "seedIn": 1,
+     "inputs": [],
+     "lines": [
+      "hi"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 1
+    },
+    {
+     "seedIn": 2,
+     "inputs": [],
+     "lines": [
+      "hi"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 2
+    },
+    {
+     "seedIn": 3,
+     "inputs": [],
+     "lines": [
+      "hi"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 3
+    },
+    {
+     "seedIn": 42,
+     "inputs": [],
+     "lines": [
+      "hi"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 42
+    },
+    {
+     "seedIn": 99999,
+     "inputs": [],
+     "lines": [
+      "hi"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": 99999
+    },
+    {
+     "seedIn": -5,
+     "inputs": [],
+     "lines": [
+      "hi"
+     ],
+     "ended": true,
+     "error": null,
+     "waiting": null,
+     "vars": {},
+     "lists": {
+      "inventory": []
+     },
+     "seed": -5
+    }
+   ]
+  },
+  {
+   "name": "extra:badnames",
+   "source": "@format 3\n:: x\" onmouseover=\"y\nhi\n:: end\nhi\n:: ok #tag stray\nhi",
+   "lint": [
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ],
+    [
+     2,
+     "error",
+     "passage name \"x\"\" may only use letters, digits, _ and -"
+    ],
+    [
+     2,
+     "error",
+     "unexpected \"onmouseover=\"y\" after the passage name (tags look like #tag)"
+    ],
+    [
+     4,
+     "error",
+     "\"END\" is reserved and cannot be a passage name"
+    ],
+    [
+     4,
+     "warn",
+     "passage \"end\" is unreachable from @start"
+    ],
+    [
+     6,
+     "error",
+     "unexpected \"stray\" after the passage name (tags look like #tag)"
+    ],
+    [
+     6,
+     "warn",
+     "passage \"ok\" is unreachable from @start"
+    ]
+   ],
+   "runs": []
+  },
+  {
+   "name": "extra:newer",
+   "source": "@format 9\n:: a\nhi",
+   "lint": [
+    [
+     1,
+     "error",
+     "this file needs tgame format 9; this runtime supports up to 3"
+    ],
+    [
+     1,
+     "warn",
+     "no @format directive — assuming format 3 (add \"@format 3\")"
+    ],
+    [
+     1,
+     "warn",
+     "no @start directive — using the first passage"
+    ]
+   ],
+   "runs": []
+  }
+ ],
+ "matcher": [
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "open the door",
+   "result": [
+    "index",
+    2
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "grab lamp",
+   "result": [
+    "index",
+    1
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "take lamp",
+   "result": [
+    "index",
+    1
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "door",
+   "result": [
+    "index",
+    2
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "lamp",
+   "result": [
+    "ambiguous",
+    [
+     0,
+     1
+    ]
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "2",
+   "result": [
+    "index",
+    1
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "9",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "0",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "dance",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "  ",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "east",
+   "result": [
+    "index",
+    2
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "go",
+   "result": [
+    "index",
+    2
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "go north",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "écouter",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "ECOUTER",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "the lamp",
+   "result": [
+    "ambiguous",
+    [
+     0,
+     1
+    ]
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "a door",
+   "result": [
+    "index",
+    2
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "take the",
+   "result": [
+    "index",
+    1
+   ]
+  },
+  {
+   "set": 0,
+   "choices": [
+    {
+     "label": "Look at the lamp",
+     "aliases": []
+    },
+    {
+     "label": "Take the lamp",
+     "aliases": [
+      "get lamp",
+      "grab lamp"
+     ]
+    },
+    {
+     "label": "Open the door",
+     "aliases": [
+      "go east"
+     ]
+    }
+   ],
+   "text": "wait",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "open the door",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "grab lamp",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "take lamp",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "door",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "lamp",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "2",
+   "result": [
+    "index",
+    1
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "9",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "0",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "dance",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "  ",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "east",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "go",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "go north",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "écouter",
+   "result": [
+    "index",
+    0
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "ECOUTER",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "the lamp",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "a door",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "take the",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 1,
+   "choices": [
+    {
+     "label": "Écouter",
+     "aliases": []
+    },
+    {
+     "label": "Ouvrir la porte",
+     "aliases": []
+    }
+   ],
+   "text": "wait",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "open the door",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "grab lamp",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "take lamp",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "door",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "lamp",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "2",
+   "result": [
+    "index",
+    1
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "9",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "0",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "dance",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "  ",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "east",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "go",
+   "result": [
+    "ambiguous",
+    [
+     0,
+     1
+    ]
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "go north",
+   "result": [
+    "index",
+    0
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "écouter",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "ECOUTER",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "the lamp",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "a door",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "take the",
+   "result": [
+    "none",
+    null
+   ]
+  },
+  {
+   "set": 2,
+   "choices": [
+    {
+     "label": "Go north",
+     "aliases": []
+    },
+    {
+     "label": "Go south",
+     "aliases": []
+    },
+    {
+     "label": "Wait",
+     "aliases": []
+    }
+   ],
+   "text": "wait",
+   "result": [
+    "index",
+    2
+   ]
+  }
+ ]
+}

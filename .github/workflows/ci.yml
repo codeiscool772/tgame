@@ -1,0 +1,67 @@
+﻿name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  engine:
+    name: engine + single-file IDE
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: tests
+        working-directory: tgame_build
+        run: |
+          npm ci
+          node test.js
+          node test_mode.js
+      - name: IDE rebuilds to exactly what is checked in
+        working-directory: tgame_build
+        run: |
+          python build.py
+          node test_page.js
+          git diff --exit-code -- ../Tgame-IDE.html
+      - name: conformance fixtures are current
+        working-directory: tgame_build
+        run: |
+          node gen_conformance.js
+          git diff --exit-code -- ../tgame-py/tests/conformance.json
+
+  python:
+    name: python ${{ matrix.python }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '${{ matrix.python }}' }
+      - run: pip install -e tgame-py pytest
+      - run: pytest tgame-py -q
+      - run: python -m tgame --version
+
+  app:
+    name: desktop app
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - working-directory: tgame-app
+        run: npm ci
+      - name: generated files are in sync
+        working-directory: tgame-app
+        run: |
+          npm run sync
+          git diff --exit-code -- .
+      - name: tests (opens real hidden windows)
+        working-directory: tgame-app
+        run: npm test

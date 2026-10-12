@@ -1,0 +1,3685 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>untitled.tgame — tgame studio</title>
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"
+      onerror="this.href='https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css'">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"
+        onerror="document.write('<script src=\"https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js\"><\/script>')"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/mode/simple.min.js"
+        onerror="document.write('<script src=\"https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/mode/simple.min.js\"><\/script>')"></script>
+
+<style>
+:root{
+  --bg:#1e1e1e; --bg-alt:#252526; --bg-panel:#252526; --bg-activity:#333333;
+  --bg-tab-on:#1e1e1e; --bg-tab-off:#2d2d2d; --bg-hover:#2a2d2e;
+  --bg-active:#332620; --bg-input:#3c3c3c;
+  --line:#3c3c3c; --line-soft:#2d2d2d;
+  --text:#cccccc; --text-dim:#858585; --text-bright:#e7e7e7; --text-muted:#6a6a6a;
+  --amber:#d99058; --amber-hi:#e6a56f;
+  --amber-glow:rgba(217,144,88,.18); --amber-select:rgba(217,144,88,.32);
+  --syn-keyword:#569cd6; --syn-control:#c586c0; --syn-func:#dcdcaa;
+  --syn-type:#4ec9b0; --syn-string:#ce9178; --syn-number:#b5cea8;
+  --syn-var:#9cdcfe; --syn-comment:#6a9955; --syn-text:#d4d4d4; --syn-punct:#808080;
+  --ui:-apple-system,BlinkMacSystemFont,"Segoe UI","Ubuntu",sans-serif;
+  --mono:"SF Mono",Monaco,Menlo,Consolas,"Liberation Mono",monospace;
+  --sidebar-w:260px; --panel-h:260px; --tab-h:36px; --bar-h:22px;
+  --editor-fs:14px; --editor-lh:21px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--text);font:13px/1.4 var(--ui);-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit;background:none;border:0;outline:0;padding:0;margin:0}
+button{cursor:pointer}
+::-webkit-scrollbar{width:14px;height:14px}
+::-webkit-scrollbar-thumb{background:#424242;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:#4f4f4f;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-track{background:transparent}
+
+.app{
+  display:grid;
+  grid-template-columns:48px var(--sidebar-w) 1fr;
+  grid-template-rows:1fr var(--bar-h);
+  grid-template-areas:"activity sidebar main" "status status status";
+  height:100vh; overflow:hidden;
+}
+.app.sidebar-hidden{grid-template-columns:48px 0 1fr}
+.app.sidebar-hidden .sidebar{display:none}
+
+.activity-bar{grid-area:activity; background:var(--bg-activity); display:flex; flex-direction:column; overflow:hidden}
+.activity{position:relative; height:48px; display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,.4); transition:color .12s; border-left:2px solid transparent}
+.activity:hover{color:#fff}
+.activity.active{color:#fff; border-left-color:var(--amber)}
+.activity svg{display:block; width:22px; height:22px}
+.activity .badge{position:absolute; bottom:6px; right:6px; min-width:16px; height:16px; border-radius:8px;
+  background:var(--amber); color:var(--bg); font:600 10px/16px var(--ui); text-align:center;
+  padding:0 4px; display:none}
+.activity .badge.on{display:block}
+.activity .badge.warn{background:#d7ba7d; color:var(--bg)}
+.activity-bar .spacer{flex:1}
+
+.sidebar{grid-area:sidebar; background:var(--bg-alt); overflow:hidden; display:flex; flex-direction:column; min-width:0}
+.sidebar-view{display:none; flex-direction:column; overflow:hidden; flex:1; min-height:0}
+.sidebar-view.active{display:flex}
+.section{display:flex; flex-direction:column; min-height:0}
+.section-head{height:24px; padding:0 10px; display:flex; align-items:center; gap:2px;
+  font:600 11px/1 var(--ui); text-transform:uppercase; letter-spacing:.08em;
+  color:var(--text); user-select:none; flex:0 0 24px}
+.section-head:hover{background:var(--bg-hover)}
+.section-head .chev{width:16px; height:16px; display:flex; align-items:center; justify-content:center;
+  transform:rotate(90deg); transition:transform .1s}
+.section-head.collapsed .chev{transform:rotate(0)}
+.section-head .count{margin-left:auto; font-weight:400; font-size:11px;
+  color:var(--text-dim); text-transform:none; letter-spacing:0; padding:0 6px}
+.section-body{overflow-y:auto; overflow-x:hidden; flex:1; min-height:0}
+.section.collapsed .section-body{display:none}
+
+.search-wrap{padding:6px 10px}
+.search-wrap input{width:100%; background:var(--bg-input); color:var(--text-bright);
+  padding:5px 9px; font:12px/1.4 var(--ui); border:1px solid transparent; border-radius:3px;
+  transition:border-color .1s}
+.search-wrap input::placeholder{color:var(--text-muted)}
+.search-wrap input:focus{border-color:var(--amber)}
+
+.row{height:24px; padding:0 10px; display:flex; align-items:center; gap:6px;
+  font:13px/24px var(--ui); color:var(--text); cursor:pointer; user-select:none;
+  white-space:nowrap; position:relative}
+.row:hover{background:var(--bg-hover)}
+.row.active{background:var(--bg-active)}
+.row.active:hover{background:var(--bg-active)}
+.row .icon{flex:0 0 16px; width:16px; height:16px; display:flex; align-items:center; justify-content:center; color:var(--text-dim)}
+.row .icon.start{color:var(--amber)}
+.row .icon.ending{color:var(--syn-string)}
+.row .label{flex:1; overflow:hidden; text-overflow:ellipsis}
+.row .meta{color:var(--text-muted); font-size:11px; font-family:var(--mono); flex:0 0 auto}
+.row.problem{height:auto; min-height:24px; padding:4px 10px; align-items:flex-start;
+  font-size:12.5px; line-height:1.4; white-space:normal}
+.row.problem .icon{margin-top:2px}
+.row.problem .body{flex:1; min-width:0; word-wrap:break-word}
+.row.problem .where{color:var(--text-muted); font-family:var(--mono); font-size:11px; margin-right:6px}
+.row.problem.error .icon{color:#f48771}
+.row.problem.warn .icon{color:#d7ba7d}
+.row.problem .icon svg{width:14px; height:14px}
+.row.example .label{color:var(--text-bright)}
+.row.example .desc{display:block; color:var(--text-muted); font-size:11px; margin-top:1px}
+.row.example{height:auto; padding:6px 10px; align-items:flex-start}
+.row.example .body{flex:1; min-width:0}
+.row.example .icon{color:var(--amber)}
+
+.empty-state{padding:16px 14px; color:var(--text-muted); font-size:12px; line-height:1.6}
+.empty-state code{font-family:var(--mono); background:var(--bg-input); padding:1px 5px;
+  border-radius:2px; color:var(--syn-string); font-size:11.5px}
+
+.vars-list{padding:4px 0}
+.vars-row{display:flex; align-items:center; height:22px; padding:0 12px;
+  font:12px/22px var(--mono); gap:12px}
+.vars-row .k{flex:1; color:var(--syn-var); overflow:hidden; text-overflow:ellipsis}
+.vars-row .v{color:var(--syn-number)}
+.vars-row.changed{animation:vflash .8s ease}
+@keyframes vflash{from{background:var(--amber-glow)} to{background:transparent}}
+
+.map-wrap{padding:14px 10px 20px; overflow:auto; height:100%; display:flex; align-items:flex-start; justify-content:center}
+.map-wrap svg{display:block; overflow:visible}
+.map-wrap .map-edge{stroke:var(--line); stroke-width:1.4; fill:none}
+.map-wrap .map-node{stroke:var(--line); stroke-width:1.8; fill:var(--bg-alt); cursor:pointer;
+  transition:stroke .15s, fill .15s}
+.map-wrap .map-node:hover{stroke:var(--amber-hi)}
+.map-wrap .map-node.is-start{stroke:var(--amber); fill:var(--amber-glow)}
+.map-wrap .map-node.is-end{stroke:var(--syn-string)}
+.map-wrap .map-node.is-unreachable{stroke:var(--line-soft); stroke-dasharray:3 2; opacity:.55}
+.map-wrap .map-label{fill:var(--text-dim); font:10px var(--mono); text-anchor:middle;
+  pointer-events:none; user-select:none}
+.map-wrap .map-label.is-start{fill:var(--amber)}
+.map-legend{padding:8px 12px; display:flex; flex-wrap:wrap; gap:10px; font-size:11px;
+  color:var(--text-dim); border-bottom:1px solid var(--line-soft)}
+.map-legend .dot{display:inline-block; width:9px; height:9px; border-radius:50%;
+  margin-right:5px; vertical-align:-1px; border:1.5px solid var(--line)}
+.map-legend .dot.start{background:var(--amber-glow); border-color:var(--amber)}
+.map-legend .dot.end{border-color:var(--syn-string)}
+.map-legend .dot.unreachable{border-style:dashed; opacity:.55}
+
+.main{grid-area:main; display:flex; flex-direction:column; min-width:0; min-height:0; overflow:hidden; background:var(--bg)}
+
+.tabbar{flex:0 0 var(--tab-h); background:var(--bg-tab-off); display:flex; align-items:stretch; min-width:0}
+.tabs{display:flex; align-items:stretch; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; flex:0 1 auto}
+.tabs::-webkit-scrollbar{display:none}
+.tab{position:relative; display:flex; align-items:center; height:var(--tab-h);
+  padding:0 10px 0 12px; gap:7px; background:var(--bg-tab-off); border-right:1px solid var(--line-soft);
+  color:var(--text-dim); font:13px/var(--tab-h) var(--ui); white-space:nowrap; max-width:240px; flex:0 0 auto}
+.tab .icon{flex:0 0 14px; color:inherit; opacity:.85}
+.tab .icon svg{width:14px; height:14px; display:block}
+.tab .name{overflow:hidden; text-overflow:ellipsis; max-width:180px}
+.tab .dirty{display:none; width:8px; height:8px; border-radius:50%; background:var(--amber);
+  flex:0 0 auto; margin-left:-2px}
+.tab.dirty .dirty{display:block}
+.tab.active{background:var(--bg-tab-on); color:var(--text-bright)}
+.tab.active::before{content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--amber)}
+.tab .close{width:16px; height:16px; display:flex; align-items:center; justify-content:center;
+  border-radius:3px; opacity:0; margin-left:2px; color:inherit}
+.tab:hover .close,
+.tab.active .close{opacity:.7}
+.tab .close:hover{background:rgba(255,255,255,.12); opacity:1}
+.tab .close svg{width:12px; height:12px; display:block}
+
+.tabbar-actions{margin-left:auto; display:flex; align-items:center; padding:0 6px; gap:2px}
+.icon-btn{height:24px; min-width:24px; padding:0 8px; display:inline-flex; align-items:center;
+  justify-content:center; gap:6px; color:var(--text); border-radius:4px; font:13px/1 var(--ui);
+  transition:background .1s, color .1s}
+.icon-btn:hover{background:rgba(255,255,255,.09); color:var(--text-bright)}
+.icon-btn svg{width:16px; height:16px; display:block}
+.icon-btn.primary{background:var(--amber); color:#2a1a0e; padding:0 11px; font-weight:500}
+.icon-btn.primary:hover{background:var(--amber-hi)}
+.icon-btn.primary svg{fill:#2a1a0e; stroke:none}
+
+.breadcrumbs{flex:0 0 22px; display:flex; align-items:center; padding:0 20px; gap:6px;
+  font:12px/22px var(--ui); color:var(--text-dim); border-bottom:1px solid var(--line-soft);
+  background:var(--bg); overflow:hidden; white-space:nowrap}
+.breadcrumbs .crumb{color:var(--text-dim)}
+.breadcrumbs .crumb.last{color:var(--text-bright)}
+.breadcrumbs .crumb.active{color:var(--amber)}
+.breadcrumbs .sep{color:var(--text-muted); opacity:.6}
+
+.editor-host{flex:1; min-height:0; display:flex; overflow:hidden}
+.editor{flex:1; display:flex; min-width:0; min-height:0; overflow:hidden; position:relative}
+.edit-wrap{flex:1; position:relative; min-width:0; overflow:hidden}
+.editor-placeholder{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:var(--text-muted); font-size:13px; background:var(--bg)}
+
+.CodeMirror{position:absolute; inset:0; height:auto !important;
+  background:var(--bg) !important; color:var(--syn-text);
+  font-family:var(--mono); font-size:var(--editor-fs); line-height:var(--editor-lh)}
+.CodeMirror-scroll{height:100%}
+.CodeMirror-gutters{background:var(--bg) !important; border-right:1px solid var(--line-soft) !important}
+.CodeMirror-linenumber{color:var(--text-muted) !important}
+.CodeMirror-cursor{border-left:1.5px solid var(--amber-hi) !important}
+.CodeMirror-selected{background:var(--amber-select) !important}
+.CodeMirror-focused .CodeMirror-selected{background:var(--amber-select) !important}
+.CodeMirror-activeline-background{background:rgba(255,255,255,.035) !important}
+
+.cm-s-default .cm-keyword{color:var(--syn-keyword)}
+.cm-s-default .cm-def{color:var(--syn-type)}
+.cm-s-default .cm-meta{color:var(--syn-string)}
+.cm-s-default .cm-variable-2{color:var(--syn-var)}
+.cm-s-default .cm-comment{color:var(--syn-comment)}
+.cm-s-default .cm-number{color:var(--syn-number)}
+.cm-s-default .cm-atom{color:var(--syn-number)}
+.cm-s-default .cm-string{color:var(--syn-string)}
+.cm-s-default .cm-operator{color:var(--syn-punct)}
+.cm-s-default .cm-variable{color:var(--syn-text)}
+.cm-s-default .cm-property{color:var(--syn-var)}
+
+.cm-s-default .cm-string-2{color:var(--syn-number)}
+.cm-s-default .cm-strong{font-weight:600;color:var(--text-bright)}
+.cm-s-default .cm-em{font-style:italic}
+.out pre.pre{margin:0 0 .75em;white-space:pre;overflow-x:auto;font:13px/1.3 var(--mono);color:var(--text)}
+.cm-error-line{background:rgba(244,135,113,.10) !important}
+.cm-error-gutter{color:#f48771 !important}
+
+.panel-resizer{flex:0 0 5px; background:transparent; cursor:ns-resize; position:relative; z-index:5}
+.panel-resizer:hover,
+.panel-resizer.dragging{background:var(--amber)}
+.panel{flex:0 0 var(--panel-h); min-height:60px; max-height:calc(100% - 140px);
+  display:flex; flex-direction:column; background:var(--bg); border-top:1px solid var(--line); min-width:0}
+.app.panel-hidden .panel,
+.app.panel-hidden .panel-resizer{display:none}
+
+.panel-head{flex:0 0 36px; display:flex; align-items:center; padding:0 10px;
+  background:var(--bg-panel); border-bottom:1px solid var(--line-soft); gap:4px}
+.panel-tab{height:36px; padding:0 12px; display:flex; align-items:center; color:var(--text-dim);
+  font:11px/36px var(--ui); text-transform:uppercase; letter-spacing:.08em;
+  border-bottom:1px solid transparent; position:relative; top:1px}
+.panel-tab.active{color:var(--text-bright); border-bottom-color:var(--amber)}
+.panel-head .spacer{flex:1}
+.panel-head .icon-btn{height:22px; min-width:22px; font-size:12px; color:var(--text-dim)}
+.panel-head .icon-btn:hover{color:var(--text-bright)}
+.auto-label{display:flex; align-items:center; gap:5px; padding:0 9px; height:22px;
+  color:var(--text-dim); font-size:11px; cursor:pointer; user-select:none; border-radius:3px}
+.auto-label:hover{color:var(--text); background:rgba(255,255,255,.04)}
+.auto-label input{accent-color:var(--amber); cursor:pointer; margin:0}
+
+.panel-body{flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden}
+.play-area{flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden}
+.out{flex:1; overflow-y:auto; padding:16px 22px 4px; font:13px/1.7 var(--mono); color:var(--text)}
+.out p{margin:0 0 .75em; white-space:pre-wrap; animation:fade .15s ease-out}
+.out p.tw{animation:none}
+.out p.echo{color:var(--syn-var); opacity:.6; margin-bottom:.25em}
+.out p.err{color:#f48771}
+.out p.sys{color:var(--text-muted); font-style:italic}
+.out p.end{color:var(--syn-string); font-style:italic; margin-top:1.2em; text-align:center}
+.out p.prompt{color:var(--amber); font-style:italic}
+.out em{color:var(--syn-var); font-style:italic}
+.out strong{color:var(--text-bright); font-weight:600}
+@keyframes fade{from{opacity:0} to{opacity:1}}
+
+.choices{list-style:none; margin:0; padding:0 22px 4px}
+.choices li{margin:0}
+.choices button{display:flex; gap:10px; width:100%; padding:3px 0; color:var(--amber);
+  font:13px/1.6 var(--mono); text-align:left; border-radius:0; transition:color .1s}
+.choices button:hover{color:var(--amber-hi); text-decoration:underline}
+.choices .num{color:var(--text-muted); flex:0 0 auto; min-width:1.4em}
+
+.cmd-row{padding:0 22px 14px; flex:0 0 auto}
+.cmd-row input{width:100%; background:var(--bg-input); color:var(--text-bright);
+  padding:7px 11px; font:12px/1.4 var(--mono); border:1px solid var(--bg-input);
+  border-radius:3px; transition:border-color .1s}
+.cmd-row input:focus{border-color:var(--amber)}
+.cmd-row input::placeholder{color:#8c8c8c}
+.cmd-row.awaiting input{border-color:var(--amber); box-shadow:0 0 0 1px var(--amber)}
+.cmd-row.hidden{display:none}
+
+.status-bar{grid-area:status; background:var(--amber); color:#2a1a0e;
+  display:flex; align-items:stretch; font:12px/22px var(--ui); overflow:hidden; user-select:none}
+.status-item{display:flex; align-items:center; gap:5px; padding:0 9px; font-size:12px;
+  white-space:nowrap; font-weight:500}
+.status-item.clickable{cursor:pointer}
+.status-item.clickable:hover{background:rgba(0,0,0,.12)}
+.status-item svg{width:13px; height:13px; display:block}
+.status-bar .spacer{flex:1}
+
+.overlay{position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:100;
+  display:flex; align-items:flex-start; justify-content:center; padding:60px 20px;
+  animation:fade .12s ease-out}
+.overlay[hidden]{display:none}
+.dialog{background:var(--bg-alt); border:1px solid var(--line); border-radius:6px;
+  max-width:660px; width:100%; max-height:calc(100vh - 120px); display:flex; flex-direction:column;
+  box-shadow:0 12px 48px rgba(0,0,0,.6)}
+.dialog-head{padding:18px 24px 12px; border-bottom:1px solid var(--line-soft)}
+.dialog-head h2{margin:0; font:400 17px/1.3 var(--ui); color:var(--text-bright)}
+.dialog-head .sub{margin-top:6px; font-size:12.5px; color:var(--text-dim); line-height:1.55}
+.dialog-body{padding:18px 24px; overflow-y:auto; flex:1; font-size:13.5px; line-height:1.65; color:var(--text)}
+.dialog-body p{margin:0 0 10px}
+.dialog-body h3{margin:20px 0 8px; font:600 11px/1 var(--ui); text-transform:uppercase;
+  letter-spacing:.08em; color:var(--amber)}
+.dialog-body h3:first-child{margin-top:2px}
+.dialog-body pre{margin:0 0 12px; padding:11px 15px; background:#171717;
+  border:1px solid var(--line-soft); border-radius:4px; font:12.5px/1.6 var(--mono);
+  color:var(--syn-text); overflow:auto; white-space:pre}
+.dialog-body code{font-family:var(--mono); font-size:12.5px; background:#171717;
+  padding:1px 6px; border-radius:3px; color:var(--syn-string); border:1px solid var(--line-soft)}
+.dialog-body kbd{display:inline-block; font:11px var(--mono); background:#171717;
+  border:1px solid var(--line); border-bottom-width:2px; border-radius:3px;
+  padding:1px 6px; color:var(--text-bright); margin:0 1px}
+.dialog-body ul{margin:6px 0 12px; padding-left:22px}
+.dialog-body ul li{margin:3px 0}
+.dialog-foot{padding:14px 24px 18px; display:flex; align-items:center; gap:8px;
+  border-top:1px solid var(--line-soft)}
+.dialog-foot .spacer{flex:1}
+.btn{padding:6px 14px; border-radius:4px; font:13px/1 var(--ui); color:var(--text);
+  background:#3a3d41; transition:background .1s, color .1s}
+.btn:hover{background:#45494e}
+.btn.primary{background:var(--amber); color:#2a1a0e; font-weight:500}
+.btn.primary:hover{background:var(--amber-hi)}
+.btn.ghost{background:transparent; color:var(--text-dim)}
+.btn.ghost:hover{background:rgba(255,255,255,.06); color:var(--text)}
+.btn[disabled]{opacity:.35; cursor:not-allowed}
+
+.dots{display:flex; gap:5px}
+.dots i{width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .15s}
+.dots i.on{background:var(--amber)}
+
+.palette-overlay{position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:200;
+  display:flex; justify-content:center; padding-top:60px; animation:fade .1s ease-out}
+.palette-overlay[hidden]{display:none}
+.palette{width:min(600px, calc(100vw - 40px)); max-height:calc(100vh - 120px);
+  background:var(--bg-alt); border:1px solid var(--line); border-radius:8px;
+  box-shadow:0 8px 44px rgba(0,0,0,.65); display:flex; flex-direction:column; overflow:hidden}
+.palette input{width:100%; padding:11px 15px; background:var(--bg-input);
+  color:var(--text-bright); font:13px/1.4 var(--ui); border-bottom:1px solid var(--line-soft)}
+.palette input::placeholder{color:#8c8c8c}
+.palette-list{overflow-y:auto; max-height:400px; padding:4px 0}
+.palette-item{display:flex; align-items:center; padding:6px 15px; gap:12px;
+  font:13px/1.5 var(--ui); color:var(--text); cursor:pointer; white-space:nowrap}
+.palette-item:hover,
+.palette-item.sel{background:var(--bg-active); color:#fff}
+.palette-item .label{flex:1; overflow:hidden; text-overflow:ellipsis}
+.palette-item .hint{color:var(--text-muted); font-size:11px; font-family:var(--mono)}
+.palette-item.sel .hint{color:rgba(255,255,255,.7)}
+.palette-empty{padding:14px; color:var(--text-muted); font-size:12.5px; text-align:center}
+
+@media (max-width:820px){
+  .app{grid-template-columns:48px 0 1fr}
+  .sidebar{display:none}
+  .app.sidebar-open{grid-template-columns:48px min(280px, 60vw) 1fr}
+  .app.sidebar-open .sidebar{display:flex}
+  .breadcrumbs{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <nav class="activity-bar">
+    <button class="activity active" data-activity="story" title="Story — passages">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 6s3-2 8-2 8 2 8 2v13s-3-2-8-2-8 2-8 2z"/>
+        <path d="M12 4v15"/>
+      </svg>
+    </button>
+    <button class="activity" data-activity="map" title="Map — how passages connect">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/>
+        <line x1="6" y1="8.2" x2="12" y2="15.8"/><line x1="18" y1="8.2" x2="12" y2="15.8"/>
+      </svg>
+    </button>
+    <button class="activity" data-activity="problems" title="Problems">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <span class="badge" id="ab-badge-problems">0</span>
+    </button>
+    <button class="activity" data-activity="examples" title="Examples">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3l1.4 4.6L18 9l-4.6 1.4L12 15l-1.4-4.6L6 9l4.6-1.4z"/>
+        <path d="M18.5 16.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/>
+      </svg>
+    </button>
+    <button class="activity" data-activity="vars" title="State — live variables">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 4H8a2 2 0 0 0-2 2v3c0 1.1-.9 2-2 2 1.1 0 2 .9 2 2v3a2 2 0 0 0 2 2h1"/>
+        <path d="M15 4h1a2 2 0 0 1 2 2v3c0 1.1.9 2 2 2-1.1 0-2 .9-2 2v3a2 2 0 0 1-2 2h-1"/>
+      </svg>
+    </button>
+    <div class="spacer"></div>
+    <button class="activity" id="btn-help-activity" title="Language reference (?)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </button>
+  </nav>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-view active" data-view="story">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="story">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>Story</span><span class="count" id="story-count"></span>
+        </div>
+        <div class="search-wrap">
+          <input type="text" id="passage-search" placeholder="Filter passages…" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="section-body"><div id="story-tree"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-view" data-view="map">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="map">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>Map</span>
+        </div>
+        <div class="map-legend">
+          <span><i class="dot start"></i>start</span>
+          <span><i class="dot end"></i>ending</span>
+          <span><i class="dot unreachable"></i>unreachable</span>
+        </div>
+        <div class="section-body">
+          <div class="map-wrap" id="map-wrap">
+            <div class="empty-state" style="text-align:center">No passages yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-view" data-view="problems">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="problems">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>Problems</span><span class="count" id="problems-count"></span>
+        </div>
+        <div class="section-body"><div id="problems-list"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-view" data-view="examples">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="examples">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>Examples</span>
+        </div>
+        <div class="section-body"><div id="examples-list"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-view" data-view="vars">
+      <div class="section" style="flex:1; min-height:0">
+        <div class="section-head" data-toggle="vars">
+          <span class="chev"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M6 3l5 5-5 5z"/></svg></span>
+          <span>State</span>
+        </div>
+        <div class="section-body"><div id="vars-list"></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="tabbar">
+      <div class="tabs">
+        <div class="tab active" id="file-tab">
+          <span class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+              <polyline points="13 2 13 9 20 9"/>
+            </svg>
+          </span>
+          <span class="name" id="tab-name">untitled.tgame</span>
+          <span class="dirty" title="Unsaved changes"></span>
+        </div>
+      </div>
+      <div class="tabbar-actions">
+        <button class="icon-btn" id="btn-toggle-panel" title="Toggle panel (Ctrl+J)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="1"/>
+            <line x1="3" y1="14" x2="21" y2="14"/>
+          </svg>
+        </button>
+        <button class="icon-btn primary" id="btn-run" title="Run (Ctrl+Enter)">
+          <svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>
+          <span>Run</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="breadcrumbs" id="breadcrumbs">
+      <span class="crumb">untitled.tgame</span>
+    </div>
+
+    <div class="editor-host">
+      <div class="editor">
+        <div class="edit-wrap">
+          <div class="editor-placeholder" id="editor-placeholder">Loading editor…</div>
+          <textarea id="src" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-resizer" id="panel-resizer"></div>
+
+    <div class="panel" id="panel">
+      <div class="panel-head">
+        <button class="panel-tab active">Play</button>
+        <span class="spacer"></span>
+        <label class="auto-label" title="Re-run as you type">
+          <input type="checkbox" id="auto-run" checked>
+          <span>auto</span>
+        </label>
+        <button class="icon-btn" id="btn-undo" title="Undo last move">Undo</button>
+        <button class="icon-btn" id="btn-save-game" title="Save game">Save</button>
+        <button class="icon-btn" id="btn-load-game" title="Load saved game">Load</button>
+        <button class="icon-btn" id="btn-restart" title="Restart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>
+          </svg>
+        </button>
+      </div>
+      <div class="panel-body">
+        <div class="play-area">
+          <div class="out" id="out" role="log" aria-live="polite" aria-label="Story"></div>
+          <ul class="choices" id="choices"></ul>
+          <form class="cmd-row" id="cmd-form">
+            <input id="cmd" aria-label="Command" placeholder="type a command or number…" autocomplete="off" autocorrect="off" spellcheck="false">
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="status-bar">
+    <div class="status-item">tgame 3.0</div>
+    <div class="status-item clickable" id="st-problems" title="Show problems">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span id="st-problems-text">0</span>
+    </div>
+    <div class="status-item" id="st-stats">0 passages</div>
+    <div class="spacer"></div>
+    <div class="status-item clickable" id="st-position" title="Cursor position">Ln 1, Col 1</div>
+    <div class="status-item clickable" title="Command palette (Ctrl+Shift+P)" id="st-palette">⌘ Commands</div>
+    <div class="status-item" id="st-saved" title="Autosave" style="opacity:0">✓ Saved</div>
+  </footer>
+</div>
+
+<input type="file" id="file-input" accept=".tgame,.txt,text/plain" hidden>
+
+<div class="overlay" id="welcome-modal" hidden>
+  <div class="dialog" style="max-width:540px">
+    <div class="dialog-head">
+      <h2>Welcome to tgame studio</h2>
+      <div class="sub">A tiny language for text adventures. One plain-text file per game.</div>
+    </div>
+    <div class="dialog-body">
+      <p>You're looking at a <strong>template</strong>. Replace it with your own story, or open an example from the <strong>Examples</strong> view in the activity rail.</p>
+      <p style="color:var(--text-dim); font-size:12.5px; margin-top:14px">
+        <strong style="color:var(--text)">Quick keys</strong><br>
+        <kbd>Ctrl</kbd><kbd>Enter</kbd> run &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>P</kbd> command palette<br>
+        <kbd>Ctrl</kbd><kbd>J</kbd> toggle play panel &nbsp;·&nbsp;
+        <kbd>?</kbd> language reference
+      </p>
+    </div>
+    <div class="dialog-foot">
+      <button class="btn primary" id="welcome-tour">Take the tour</button>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="welcome-skip">Skip</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="tutorial-modal" hidden>
+  <div class="dialog" style="max-width:560px">
+    <div class="dialog-head"><h2 id="tut-title">—</h2></div>
+    <div class="dialog-body" id="tut-body"></div>
+    <div class="dialog-foot">
+      <div class="dots" id="tut-dots"></div>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="tut-back">Back</button>
+      <button class="btn primary" id="tut-next">Next</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="help-modal" hidden>
+  <div class="dialog">
+    <div class="dialog-head">
+      <h2>tgame language reference · format 3</h2>
+      <div class="sub">Everything the language understands.</div>
+    </div>
+    <div class="dialog-body">
+      <h3>Directives</h3>
+      <p>Directives are global. Put them above the first passage.</p>
+      <pre>@format  3            <span style="color:var(--syn-comment)">// required; a newer number is refused by older runtimes</span>
+@title   My Game
+@author  You
+@start   entrance
+@set     score = 0     <span style="color:var(--syn-comment)">// evaluated once, at game start</span>
+@list    clues
+@seed    42            <span style="color:var(--syn-comment)">// same seed + same choices = same game</span>
+@parser                <span style="color:var(--syn-comment)">// typed commands instead of buttons</span>
+@ignore  the a an      <span style="color:var(--syn-comment)">// words the matcher skips</span>
+@typewriter fast       <span style="color:var(--syn-comment)">// or: slow, off, or ms per character</span></pre>
+      <p><code>@format 2</code> files still run: every line stays its own paragraph.</p>
+
+      <h3>Passages</h3>
+      <p>Start one with <code>:: name</code>, optionally followed by <code>#tags</code>. Names use letters (any language), digits, <code>_</code> and <code>-</code>, are case-insensitive, and <code>END</code> is reserved.</p>
+      <pre>:: entrance #outdoors
+The cave mouth yawns open.</pre>
+
+      <h3>Paragraphs</h3>
+      <p>Consecutive lines join into one paragraph. A blank line starts a new one. End a line with <code>\</code> for a hard line break. Leading indentation is ignored.</p>
+      <p>For ASCII art or anything that must stay exactly as typed, fence it with triple backticks. Fenced lines are literal: no escapes, no <code>{braces}</code>.</p>
+
+      <h3>Choices</h3>
+      <p><code>*</code> gives the player a choice. End with <code>-&gt; target</code> to move; omit it to stay. Effects go in brackets at the end. Add <code>once</code> to hide the choice after it is taken. After <code>|</code>, list extra words the player can type.</p>
+      <pre>* Take the lamp | get lamp, grab lamp -&gt; entrance [get lamp, once]
+* Toggle the lantern [lamp = not lamp]
+* Go north -&gt; dark_hall</pre>
+
+      <h3>Typed input</h3>
+      <pre>? What is your name? [name:text] -&gt; next
+? How old are you? [age:number]</pre>
+      <p><code>:text</code> keeps the answer as text, <code>:number</code> re-asks until it is a number. With no type, numeric answers become numbers.</p>
+
+      <h3>Typed commands (@parser)</h3>
+      <p>Input is matched against choices: a number, the exact label or an alias, then any words of the label in order. If more than one choice fits, the player is asked which. <code>help</code>, <code>undo</code>, <code>save</code> and <code>load</code> always work.</p>
+
+      <h3>Pause and typewriter</h3>
+      <pre>...          <span style="color:var(--syn-comment)">// half a second</span>
+... 800
+... 2s
+~type  ~normal  ~fast  ~slow</pre>
+      <p>Click the play panel to skip a paragraph. Reduced-motion users get no typewriter.</p>
+
+      <h3>Variables and inline text</h3>
+      <pre>@set score = 0
+You have {score} {score == 1 | point | points}.
+{if has lamp}The lamp glows, and you carry {count inventory}.{else}It is dark.{end}</pre>
+      <p>Inline <code>{if}</code> blocks may nest and contain other <code>{braces}</code>. Variable names are case-sensitive.</p>
+
+      <h3>Inventory and lists</h3>
+      <p>Items, passage names and directives are case-insensitive.</p>
+      <pre>[get lamp]   [drop lamp]   [clear inventory]
+[clues add footprints]   [clues remove footprints]   [clues clear]
+You are carrying {inventory}.   Clues: {clues}</pre>
+
+      <h3>Conditions (one grammar, everywhere)</h3>
+      <p><code>or</code> &lt; <code>and</code> &lt; <code>not</code> &lt; comparisons &lt; <code>+ -</code> &lt; <code>* / %</code>. So <code>not has lamp and score &gt; 5</code> means <code>(not has lamp) and (score &gt; 5)</code>.</p>
+      <pre>if has lamp and score &gt; 5:
+You feel confident.
+else:
+You hesitate.
+end
+
+has lamp     has no lamp     clues has footprints
+visited village     visits == 1     count clues &gt; 2</pre>
+
+      <h3>When effects run</h3>
+      <p>A standalone <code>[effect]</code> line runs every time the passage is drawn, including after a stay-in-place choice. Prefix it to control that:</p>
+      <pre>[enter score += 1]    <span style="color:var(--syn-comment)">// only when you arrive from elsewhere</span>
+[once get coin]       <span style="color:var(--syn-comment)">// only the first time, ever</span></pre>
+      <p><code>visits</code> counts arrivals, not redraws.</p>
+
+      <h3>Snippets</h3>
+      <p><code>&gt;&gt; name</code> runs another passage in place, then carries on. A snippet may contain text, conditions and effects, but no choices or jumps.</p>
+
+      <h3>Randomness</h3>
+      <pre>[roll = random(1, 6)]</pre>
+      <p>Seeded and deterministic (mulberry32), including in <code>@set</code>. Same seed and same inputs always replay the same game.</p>
+
+      <h3>Save, restore, undo</h3>
+      <p>Type <code>undo</code>, <code>save</code> or <code>load</code>, or use the buttons in the play panel. A save is the seed plus the list of choices; loading replays it.</p>
+
+      <h3>Escaping</h3>
+      <p>A backslash makes the next character literal. A line that starts with a backslash is always narration, so <code>\if</code>, <code>\end</code>, <code>\// not a comment</code> all work.</p>
+      <pre>\-&gt;   \*   \?   \.   \~   \::   \@   \[   \]   \{   \}   \|   \/   \#   \\</pre>
+
+      <h3>Comments</h3>
+      <p><code>//</code> at the start of a line is a comment. Elsewhere on a line it is ordinary text, so URLs are fine.</p>
+
+      <h3>Keyboard</h3>
+      <p>
+        <kbd>Ctrl</kbd><kbd>Enter</kbd> Run &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>P</kbd> Command palette &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>J</kbd> Toggle panel &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>B</kbd> Toggle sidebar<br>
+        <kbd>Ctrl</kbd><kbd>S</kbd> Save &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>O</kbd> Open &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>N</kbd> New &nbsp;·&nbsp;
+        <kbd>Tab</kbd> Indent &nbsp;·&nbsp;
+        <kbd>Esc</kbd> Close dialogs
+      </p>
+    </div>
+    <div class="dialog-foot">
+      <div class="spacer"></div>
+      <button class="btn primary" id="help-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="palette-overlay" id="palette-overlay" hidden>
+  <div class="palette">
+    <input id="palette-input" placeholder="Type a command…" autocomplete="off" spellcheck="false">
+    <div class="palette-list" id="palette-list"></div>
+  </div>
+</div>
+
+<script id="tgame-runtime">
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════
+   tgame runtime — format 3
+   Self-contained: parser, expression evaluator, interpreter (a generator
+   that yields typed events) and a reference DOM player.
+
+   Event protocol (what Interp.run() yields):
+     {type:'text',   text, html, style?, typewriter, speed}   style: 'prompt'|'sys'|'pre'
+     {type:'pause',  ms}
+     {type:'input',  varName, prompt, vtype}      -> resume with the typed string
+     {type:'choice', choices[], passage, parserMode} -> resume with a choice index
+     {type:'end'}
+     {type:'error',  text}
+   ═══════════════════════════════════════════════════════════════════ */
+
+const TGAME_FORMAT = 3;
+
+/* identifiers are Unicode: letters, digits, underscore */
+const ID = '[\\p{L}_][\\p{L}\\p{N}_]*';
+function rx(src, flags){ return new RegExp(src.split('<ID>').join(ID), (flags || '') + 'u'); }
+const ID_FULL   = rx('^<ID>$');
+const NAME_FULL = /^[\p{L}\p{N}_-]+$/u;
+const WORD_RE   = /^[\p{L}\p{N}_]/u;
+
+/* ───────────── escapes ─────────────
+   A backslash consumes the next character. Special characters become
+   private-use placeholders so the parser cannot see them as syntax. */
+const ESC_SET = '\\*?:@[]{}|>-~./`#';
+const ESC_TO_PH = {};
+const PH_TO_ESC = {};
+(function(){
+  for (let i = 0; i < ESC_SET.length; i++){
+    const ch = ESC_SET[i];
+    const ph = String.fromCharCode(0xE000 + i);
+    ESC_TO_PH[ch] = ph;
+    PH_TO_ESC[ph] = ch;
+  }
+})();
+function escapeLine(line){
+  return String(line).replace(/\\([\s\S]?)/g, function(_, ch){
+    if (ch === '' || ch === undefined) return '\\';      /* trailing backslash = hard line break */
+    if (ESC_TO_PH[ch]) return ESC_TO_PH[ch];
+    return ch;
+  });
+}
+function unescapeText(text){
+  return String(text).replace(/[\uE000-\uE0FF]/g, function(ch){ return PH_TO_ESC[ch] || ch; });
+}
+function isEscapedStart(trimmed){
+  return trimmed.length > 0 && PH_TO_ESC[trimmed[0]] !== undefined;
+}
+function escHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '"' ? '&quot;' : '&#39;';
+  });
+}
+/* operates on text that still holds placeholders, so \* never becomes italics */
+function fmtHTML(s){
+  let h = escHtml(s);
+  h = h.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  return unescapeText(h);
+}
+
+/* ───────────── small utilities ───────────── */
+function mulberry32(a){
+  return function(){
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;      /* always in [0, 1) */
+  };
+}
+function hashStr(s){
+  let h = 5381;
+  s = String(s);
+  for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+function splitTopLevel(s, seps, quotes){
+  const parts = [];
+  let cur = '', depth = 0, q = null, i = 0;
+  outer: while (i < s.length){
+    const c = s[i];
+    if (c === '\\' && i + 1 < s.length){ cur += c + s[i + 1]; i += 2; continue; }
+    if (quotes){
+      if (q){ cur += c; if (c === q) q = null; i++; continue; }
+      if ((c === '"' || c === "'") && (i === 0 || !/[\p{L}\p{N}_]/u.test(s[i - 1]))){ q = c; cur += c; i++; continue; }
+    }
+    if (c === '(' || c === '[' || c === '{'){ depth++; cur += c; i++; continue; }
+    if (c === ')' || c === ']' || c === '}'){ depth--; cur += c; i++; continue; }
+    if (depth === 0){
+      for (let k = 0; k < seps.length; k++){
+        if (s.startsWith(seps[k], i)){ parts.push(cur); cur = ''; i += seps[k].length; continue outer; }
+      }
+    }
+    cur += c; i++;
+  }
+  parts.push(cur);
+  return parts;
+}
+function listHas(list, name){
+  const n = String(name).toLowerCase();
+  return (list || []).some(function(x){ return String(x).toLowerCase() === n; });
+}
+function listIndex(list, name){
+  const n = String(name).toLowerCase();
+  for (let i = 0; i < list.length; i++) if (String(list[i]).toLowerCase() === n) return i;
+  return -1;
+}
+
+/* ───────────── line-level parsers ───────────── */
+const PROMPT_BARE_RE   = rx('^\\?\\s+(<ID>)(?::(text|number))?\\s*(?:->\\s*(\\S+))?\\s*$');
+const PROMPT_INLINE_RE = rx('^\\?\\s+(.+?)(?:\\s*\\[(<ID>)(?::(text|number))?\\])?\\s*(?:->\\s*(\\S+))?\\s*$');
+const PAUSE_RE         = /^\.\.\.\s*(\d+(?:\.\d+)?)?\s*(ms|s)?\s*$/;
+const MODE_RE          = /^~(\w+)\s*$/;
+const MODES = { type:1, normal:1, fast:1, slow:1 };
+
+function parsePromptLine(text){
+  let m = text.match(PROMPT_BARE_RE);
+  if (m) return { prompt: null, varName: m[1], vtype: m[2] || null, target: m[3] || null };
+  m = text.match(PROMPT_INLINE_RE);
+  if (m){
+    const prompt = m[1].trim();
+    if (!prompt) return null;
+    return { prompt: prompt, varName: m[2] || null, vtype: m[3] || null, target: m[4] || null };
+  }
+  return null;
+}
+function parsePauseLine(text){
+  const m = text.match(PAUSE_RE);
+  if (!m) return null;
+  const n = m[1] ? parseFloat(m[1]) : 500;
+  const ms = m[2] === 's' ? n * 1000 : n;
+  return Math.max(0, Math.round(ms));
+}
+function parseModeLine(text){
+  const m = text.match(MODE_RE);
+  if (!m) return null;
+  const mode = m[1].toLowerCase();
+  return MODES[mode] ? mode : null;
+}
+
+/* one classifier shared by the interpreter, linter, map and sidebar */
+function classifyLine(item){
+  if (item.blank) return { kind:'blank' };
+  if (item.verbatim !== undefined) return { kind:'verbatim' };
+  if (item.literal) return { kind:'text' };
+  const t = item.text;
+  if (t.startsWith('if ') && t.endsWith(':')) return { kind:'if', cond: t.slice(3, -1).trim() };
+  if (t === 'else:') return { kind:'else' };
+  if (t === 'end') return { kind:'end' };
+  const ms = parsePauseLine(t);
+  if (ms !== null) return { kind:'pause', ms: ms };
+  const mode = parseModeLine(t);
+  if (mode) return { kind:'mode', mode: mode };
+  if (/^~\w+\s*$/.test(t)) return { kind:'badmode' };
+  if (t[0] === '?') return { kind:'input' };
+  if (t[0] === '*') return { kind:'choice' };
+  if (t.slice(0, 2) === '->') return { kind:'jump', target: t.slice(2).trim() };
+  if (t.slice(0, 2) === '>>') return { kind:'call', target: t.slice(2).trim() };
+  if (t[0] === '[' && t.endsWith(']')) return { kind:'effect', src: t.slice(1, -1) };
+  return { kind:'text' };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PARSER
+   ═══════════════════════════════════════════════════════════════════ */
+const KNOWN_DIRECTIVES = {
+  title:1, author:1, start:1, set:1, var:1, list:1, seed:1, parser:1,
+  format:1, typewriter:1, ignore:1
+};
+
+function parse(src){
+  const game = {
+    meta: {}, vars: {}, inits: [], lists: {}, seed: null, parserMode: false,
+    typewriterEnabled: false, typewriterSpeed: 30, format: null,
+    ignore: ['the', 'a', 'an'],
+    passages: {}, order: [], errors: []
+  };
+  let cur = null;
+  let fence = null;
+  const lines = String(src).split(/\r?\n/);
+
+  for (let i = 0; i < lines.length; i++){
+    const raw = lines[i];
+
+    /* fenced verbatim block: everything between ``` lines is literal */
+    if (fence){
+      if (/^\s*```\s*$/.test(raw)){
+        if (cur) cur.lines.push({ text:'', verbatim: fence.lines.join('\n'), raw:'', n: fence.n });
+        fence = null;
+      } else fence.lines.push(raw);
+      continue;
+    }
+    if (/^\s*```\s*$/.test(raw)){
+      if (!cur) game.errors.push({ sev:'error', n:i+1, msg:'content outside of any passage' });
+      fence = { n: i + 1, lines: [] };
+      continue;
+    }
+
+    const rt = raw.replace(/^\s+/, '');
+    const literal = rt[0] === '\\';                 /* a leading backslash makes the whole line narration */
+    const esc = escapeLine(raw);
+    const trimmed = esc.replace(/^\s+/, '');
+    if (!trimmed){
+      if (cur && game.format !== 2) cur.lines.push({ blank: true, n: i + 1 });
+      continue;
+    }
+    if (!literal && trimmed.slice(0, 2) === '//') continue;
+
+    /* ---- directives ---- */
+    if (!literal && trimmed[0] === '@'){
+      const m = trimmed.match(/^@(\w+)\s*([\s\S]*)$/);
+      if (!m){ game.errors.push({ sev:'error', n:i+1, msg:'malformed directive' }); continue; }
+      const key = m[1].toLowerCase();
+      const val = m[2].trim();
+      if (!KNOWN_DIRECTIVES[key])
+        game.errors.push({ sev:'warn', n:i+1, msg:'unknown directive @' + m[1] });
+      else if (cur)
+        game.errors.push({ sev:'warn', n:i+1, msg:'@' + key + ' inside a passage is still global — it applies from the start of the game. Move it above the first passage.' });
+
+      if (key === 'set' || key === 'var'){
+        const eq = val.indexOf('=');
+        if (eq < 0){ game.errors.push({ sev:'error', n:i+1, msg:'@set needs "name = value"' }); continue; }
+        const name = val.slice(0, eq).trim();
+        if (!ID_FULL.test(name)){
+          game.errors.push({ sev:'error', n:i+1, msg:'@set: bad name "' + name + '"' }); continue;
+        }
+        const exprSrc = val.slice(eq + 1);
+        try {
+          game.vars[name] = evalExpr(exprSrc, { vars: Object.assign({}, game.vars), lists: {}, rng: function(){ return 0.5; } });
+          game.inits.push({ name: name, src: exprSrc, n: i + 1 });
+        } catch(e){ game.errors.push({ sev:'error', n:i+1, msg:'@set: ' + e.message }); }
+      }
+      else if (key === 'list'){
+        if (!ID_FULL.test(val)){
+          game.errors.push({ sev:'error', n:i+1, msg:'@list: bad name "' + val + '"' }); continue;
+        }
+        if (!(val in game.lists)) game.lists[val] = [];
+      }
+      else if (key === 'seed'){
+        const n = parseInt(val, 10);
+        if (isNaN(n)) game.errors.push({ sev:'error', n:i+1, msg:'@seed needs a number' });
+        else game.seed = n;
+      }
+      else if (key === 'format'){
+        const n = parseInt(val, 10);
+        if (isNaN(n)) game.errors.push({ sev:'error', n:i+1, msg:'@format needs a number' });
+        else if (n > TGAME_FORMAT)
+          game.errors.push({ sev:'error', n:i+1, msg:'this file needs tgame format ' + n + '; this runtime supports up to ' + TGAME_FORMAT });
+        else game.format = n;
+      }
+      else if (key === 'ignore'){
+        game.ignore = val.toLowerCase().split(/[\s,]+/).filter(Boolean);
+      }
+      else if (key === 'parser'){ game.parserMode = true; }
+      else if (key === 'typewriter'){
+        const v = val.toLowerCase();
+        if (v === 'off'){ game.typewriterEnabled = false; }
+        else {
+          game.typewriterEnabled = true;
+          if (v === 'fast') game.typewriterSpeed = 15;
+          else if (v === 'slow') game.typewriterSpeed = 60;
+          else if (/^\d+$/.test(v)) game.typewriterSpeed = Math.max(1, parseInt(v, 10));
+          else game.typewriterSpeed = 30;
+        }
+      }
+      else { game.meta[key] = val; }
+      continue;
+    }
+
+    /* ---- passage header:  :: name #tag #tag ---- */
+    if (!literal && trimmed.slice(0, 2) === '::'){
+      const parts = trimmed.slice(2).trim().split(/\s+/).filter(Boolean);
+      const name = parts[0] || '';
+      if (!name){ game.errors.push({ sev:'error', n:i+1, msg:'passage needs a name' }); continue; }
+      const tags = [];
+      for (let k = 1; k < parts.length; k++){
+        if (parts[k][0] === '#' && parts[k].length > 1) tags.push(parts[k].slice(1));
+        else game.errors.push({ sev:'error', n:i+1, msg:'unexpected "' + parts[k] + '" after the passage name (tags look like #tag)' });
+      }
+      if (!NAME_FULL.test(name))
+        game.errors.push({ sev:'error', n:i+1, msg:'passage name "' + name + '" may only use letters, digits, _ and -' });
+      if (name.toLowerCase() === 'end')
+        game.errors.push({ sev:'error', n:i+1, msg:'"END" is reserved and cannot be a passage name' });
+      const key = name.toLowerCase();
+      if (game.passages[key])
+        game.errors.push({ sev:'error', n:i+1, msg:'duplicate passage "' + name + '"' });
+      cur = { name: name, key: key, n: i + 1, tags: tags, lines: [] };
+      game.passages[key] = cur;
+      game.order.push(cur);
+      continue;
+    }
+
+    if (!cur){
+      game.errors.push({ sev:'error', n:i+1, msg:'content outside of any passage' });
+      continue;
+    }
+    cur.lines.push({ text: trimmed, raw: raw, n: i + 1, literal: literal });
+  }
+
+  if (fence) game.errors.push({ sev:'error', n: fence.n, msg:'unclosed ``` block' });
+  if (!('inventory' in game.lists)) game.lists.inventory = [];
+  return game;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EXPRESSIONS — one grammar for conditions, effects and inline text
+     or  and  not  ==  !=  <  <=  >  >=  + - * / %
+     has ITEM · has no ITEM · LIST has ITEM · visited PASSAGE
+     count LIST · inventory · visits · random(lo, hi)
+   ═══════════════════════════════════════════════════════════════════ */
+const TOKEN_RE = new RegExp(
+  '"[^"]*"|\'[^\']*\'|\\d+(?:\\.\\d+)?|' + ID + '|==|!=|<=|>=|&&|\\|\\||[!()<>+\\-*/%,]', 'gu');
+
+function evalExpr(src, ctx){
+  ctx = ctx || {};
+  const vars    = ctx.vars || {};
+  const lists   = ctx.lists || {};
+  const visited = ctx.visited || new Set();
+  const extras  = ctx.extras || {};
+  const rng     = ctx.rng || Math.random;
+
+  const t = String(src).match(TOKEN_RE) || [];
+  let p = 0;
+  const peek = function(){ return t[p]; };
+  const isQuoted = function(k){ return k !== undefined && /^["']/.test(k); };
+  const isWord   = function(k){ return k !== undefined && (WORD_RE.test(k) || isQuoted(k)) && k !== 'and' && k !== 'or'; };
+
+  function itemName(){
+    const w = [];
+    while (p < t.length && isWord(t[p])){
+      const k = t[p++];
+      w.push(isQuoted(k) ? k.slice(1, -1) : k);
+    }
+    return w.join(' ');
+  }
+  function hasTail(list){
+    let neg = false;
+    if (t[p] === 'no'){ neg = true; p++; }
+    const item = itemName();
+    if (!item) throw new Error('"has" needs an item name');
+    const present = listHas(list, item);
+    return neg ? !present : present;
+  }
+
+  function primary(){
+    const tok = t[p];
+    if (tok === undefined) throw new Error('unexpected end of expression');
+    if (tok === '('){
+      p++;
+      const v = or_();
+      if (t[p] !== ')') throw new Error('missing )');
+      p++;
+      return v;
+    }
+    if (tok === '-'){ p++; return -(+primary()); }
+    if (tok === 'has'){ p++; return hasTail(lists.inventory); }
+    if (tok === 'visited'){
+      p++;
+      let name = t[p++];
+      if (name === undefined) throw new Error('"visited" needs a passage name');
+      while (t[p] === '-' && t[p + 1] !== undefined && WORD_RE.test(t[p + 1])){ name += '-' + t[p + 1]; p += 2; }
+      return visited.has(String(name).toLowerCase());
+    }
+    if (tok === 'random'){
+      p++;
+      if (t[p] !== '(') throw new Error('random needs (lo, hi)');
+      p++;
+      const lo = or_();
+      if (t[p] !== ',') throw new Error('random needs (lo, hi)');
+      p++;
+      const hi = or_();
+      if (t[p] !== ')') throw new Error('missing ) after random');
+      p++;
+      return Math.floor(rng() * (hi - lo + 1)) + lo;
+    }
+    if (tok === 'count'){
+      p++;
+      const name = t[p++];
+      const list = lists[name];
+      return list ? list.length : 0;
+    }
+    if (/^\d/.test(tok)){ p++; return parseFloat(tok); }
+    if (isQuoted(tok)){ p++; return tok.slice(1, -1); }
+    if (tok === 'true'){ p++; return true; }
+    if (tok === 'false'){ p++; return false; }
+    if (tok === 'inventory'){ p++; return (lists.inventory || []).length; }
+    if (!WORD_RE.test(tok)) throw new Error('unexpected "' + tok + '"');
+    p++;
+    if (t[p] === 'has' && Object.prototype.hasOwnProperty.call(lists, tok)){
+      p++;
+      return hasTail(lists[tok]);
+    }
+    if (extras[tok] !== undefined) return extras[tok];
+    return vars[tok] !== undefined ? vars[tok] : 0;
+  }
+  function mul(){
+    let l = primary();
+    for (;;){
+      const o = peek();
+      if (o === '*' || o === '/' || o === '%'){
+        p++;
+        const r = primary();
+        l = o === '*' ? (+l) * (+r) : o === '/' ? (+l) / (+r) : (+l) % (+r);
+      } else return l;
+    }
+  }
+  function add(){
+    let l = mul();
+    for (;;){
+      const o = peek();
+      if (o === '+' || o === '-'){
+        p++;
+        const r = mul();
+        if (o === '+' && (typeof l === 'string' || typeof r === 'string')) l = String(l) + String(r);
+        else l = o === '+' ? (+l) + (+r) : (+l) - (+r);
+      } else return l;
+    }
+  }
+  function cmp(){
+    const l = add();
+    const o = peek();
+    if (o === '==' || o === '!=' || o === '<' || o === '<=' || o === '>' || o === '>='){
+      p++;
+      const r = add();
+      return o === '==' ? l == r : o === '!=' ? l != r
+           : o === '<'  ? l <  r : o === '<=' ? l <= r
+           : o === '>'  ? l >  r : l >= r;
+    }
+    return l;
+  }
+  function not_(){
+    if (t[p] === 'not' || t[p] === '!'){ p++; return !not_(); }
+    return cmp();
+  }
+  /* both sides are always parsed, so trailing-token errors are never hidden by short-circuiting */
+  function and_(){
+    let l = not_();
+    while (peek() === 'and' || peek() === '&&'){ p++; const r = not_(); l = l && r; }
+    return l;
+  }
+  function or_(){
+    let l = and_();
+    while (peek() === 'or' || peek() === '||'){ p++; const r = and_(); l = l || r; }
+    return l;
+  }
+
+  const v = or_();
+  if (p < t.length) throw new Error('unexpected "' + t[p] + '"');
+  return v;
+}
+
+function evalCondition(src, ctx){
+  const s = String(src).trim();
+  if (!s) return true;
+  return !!evalExpr(s, ctx);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INLINE TEXT  {var}  {a == 1 | one | many}  {if x}..{else}..{end}
+   Brace-aware, so branches may nest and contain {other} groups.
+   ═══════════════════════════════════════════════════════════════════ */
+function matchBrace(s, i){
+  let d = 0;
+  for (let k = i; k < s.length; k++){
+    if (s[k] === '{') d++;
+    else if (s[k] === '}'){ d--; if (d === 0) return k; }
+  }
+  return -1;
+}
+function findIfBlock(s, from){
+  let d = 0, elseAt = -1, elseEnd = -1, i = from;
+  while (i < s.length){
+    if (s[i] === '{'){
+      const c = matchBrace(s, i);
+      if (c < 0) return null;
+      const inner = s.slice(i + 1, c).trim();
+      if (/^if\s/.test(inner)) d++;
+      else if (inner === 'end'){
+        if (d === 0) return { elseAt: elseAt, elseEnd: elseEnd, endAt: i, endEnd: c + 1 };
+        d--;
+      }
+      else if (inner === 'else' && d === 0 && elseAt < 0){ elseAt = i; elseEnd = c + 1; }
+      i = c + 1;
+      continue;
+    }
+    i++;
+  }
+  return null;
+}
+function interp(s, ctx){ return renderInline(String(s), ctx, 0); }
+function renderInline(s, ctx, depth){
+  if (depth > 40) return s;
+  let out = '', i = 0;
+  while (i < s.length){
+    const c = s[i];
+    if (c !== '{'){ out += c; i++; continue; }
+    const close = matchBrace(s, i);
+    if (close < 0){ out += s.slice(i); break; }
+    const inner = s.slice(i + 1, close).trim();
+    if (/^if\s/.test(inner)){
+      const blk = findIfBlock(s, close + 1);
+      if (!blk){ i = close + 1; continue; }              /* unclosed {if}: dropped (the linter warns) */
+      let on = false;
+      try { on = evalCondition(inner.slice(3).trim(), ctx); } catch(e){ on = false; }
+      const yes = s.slice(close + 1, blk.elseAt >= 0 ? blk.elseAt : blk.endAt);
+      const no  = blk.elseAt >= 0 ? s.slice(blk.elseEnd, blk.endAt) : '';
+      out += renderInline(on ? yes : no, ctx, depth + 1);
+      i = blk.endEnd;
+      continue;
+    }
+    out += expandInterp(inner, ctx, depth);
+    i = close + 1;
+  }
+  return out;
+}
+function expandInterp(inner, ctx, depth){
+  if (!inner) return '';
+  const lists  = ctx.lists || {};
+  const visits = ctx.visits || {};
+  let m;
+  if ((m = inner.match(/^count\s+(\S+)$/))){
+    const list = lists[m[1]];
+    return list ? String(list.length) : '0';
+  }
+  if (inner === 'inventory') return (lists.inventory || []).join(', ');
+  if (inner === 'visits') return String(visits[ctx.currentPassage] || 0);
+  const parts = splitTopLevel(inner, ['|']);
+  if (parts.length === 3 || parts.length === 2){
+    let cond;
+    try { cond = evalCondition(parts[0].trim(), ctx); } catch(e){ cond = false; }
+    const yes = parts[1].trim();
+    const no  = parts.length === 3 ? parts[2].trim() : '';
+    return renderInline(cond ? yes : no, ctx, depth + 1);
+  }
+  if (ID_FULL.test(inner)){
+    const extras = ctx.extras || {};
+    if (extras[inner] !== undefined) return String(extras[inner]);
+    if (Object.prototype.hasOwnProperty.call(lists, inner)) return lists[inner].join(', ');
+    const v = (ctx.vars || {})[inner];
+    return v !== undefined ? String(v) : '';
+  }
+  try {
+    const v = evalExpr(inner, ctx);
+    return v === undefined ? '' : String(v);
+  } catch(e){ return ''; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EFFECTS   [get lamp, score += 5, clues add footprints, once …]
+   ═══════════════════════════════════════════════════════════════════ */
+const RX_LIST_OP   = rx('^(<ID>)\\s+(add|remove)\\s+(.+?)$');
+const RX_LIST_CLR  = rx('^(<ID>)\\s+clear$');
+const RX_ASSIGN    = rx('^(<ID>)\\s*(\\+=|-=|\\*=|/=|%=|=)\\s*([\\s\\S]*)$');
+const RX_INCDEC    = rx('^(<ID>)\\s*(\\+\\+|--)$');
+
+function applyEffects(src, ctx){
+  const vars  = ctx.vars  || (ctx.vars = {});
+  const lists = ctx.lists || (ctx.lists = {});
+  const parts = splitTopLevel(String(src), [',', ';'], true);
+
+  for (let i = 0; i < parts.length; i++){
+    const e = parts[i].trim();
+    if (!e) continue;
+    let m;
+
+    if ((m = e.match(/^get\s+(.+?)$/))){
+      const item = m[1].trim();
+      lists.inventory = lists.inventory || [];
+      if (item && !listHas(lists.inventory, item)) lists.inventory.push(item);
+      continue;
+    }
+    if ((m = e.match(/^drop\s+(.+?)$/))){
+      const inv = lists.inventory || [];
+      const idx = listIndex(inv, m[1].trim());
+      if (idx >= 0) inv.splice(idx, 1);
+      continue;
+    }
+    if (e === 'clear inventory'){
+      if (lists.inventory) lists.inventory.length = 0;
+      continue;
+    }
+    if ((m = e.match(RX_LIST_OP))){
+      const name = m[1], item = m[3].trim();
+      if (!lists[name]) throw new Error('unknown list "' + name + '"');
+      if (m[2] === 'add'){ if (item && !listHas(lists[name], item)) lists[name].push(item); }
+      else { const idx = listIndex(lists[name], item); if (idx >= 0) lists[name].splice(idx, 1); }
+      continue;
+    }
+    if ((m = e.match(RX_LIST_CLR))){
+      if (!lists[m[1]]) throw new Error('unknown list "' + m[1] + '"');
+      lists[m[1]].length = 0;
+      continue;
+    }
+    if ((m = e.match(RX_INCDEC))){
+      vars[m[1]] = (+vars[m[1]] || 0) + (m[2] === '++' ? 1 : -1);
+      continue;
+    }
+    if ((m = e.match(RX_ASSIGN))){
+      const name = m[1], op = m[2];
+      const val = evalExpr(m[3], ctx);
+      const cur = vars[name];
+      if (op === '=') vars[name] = val;
+      else if (op === '+=' && (typeof cur === 'string' || typeof val === 'string'))
+        vars[name] = (cur === undefined ? '' : String(cur)) + String(val);
+      else {
+        const a = +cur || 0, b = +val || 0;
+        vars[name] = op === '+=' ? a + b : op === '-=' ? a - b : op === '*=' ? a * b : op === '/=' ? a / b : a % b;
+      }
+      continue;
+    }
+    throw new Error('unrecognized effect "' + e + '"');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CHOICES
+     * Label | alias, alias -> target [effects]
+   ═══════════════════════════════════════════════════════════════════ */
+function splitChoice(line){
+  const s = line.slice(1).trim();
+  let label = s, target = null, effects = '';
+  const arrow = s.indexOf('->');
+  if (arrow >= 0){
+    label = s.slice(0, arrow).trim();
+    const rest = s.slice(arrow + 2).trim();
+    const ob = rest.indexOf('[');
+    if (ob >= 0 && rest.endsWith(']')){
+      target = rest.slice(0, ob).trim();
+      effects = rest.slice(ob + 1, -1).trim();
+    } else target = rest;
+  } else {
+    const ob = s.indexOf('[');
+    if (ob >= 0 && s.endsWith(']')){
+      label = s.slice(0, ob).trim();
+      effects = s.slice(ob + 1, -1).trim();
+    }
+  }
+  return { label: label, target: target, effects: effects };
+}
+
+function parseChoice(line, ctx){
+  const sc = splitChoice(line);
+  const labelParts = splitTopLevel(sc.label, ['|']);
+  const label = labelParts[0].trim();
+  if (!label) return null;
+  const render = function(x){ return unescapeText(interp(x, ctx)); };
+
+  let once = false;
+  const keep = [];
+  splitTopLevel(sc.effects, [',', ';'], true).forEach(function(part){
+    if (part.trim() === 'once') once = true;
+    else if (part.trim()) keep.push(part.trim());
+  });
+
+  return {
+    label: render(label),
+    aliases: labelParts.slice(1).map(function(a){ return render(a.trim()); }).filter(Boolean),
+    target: sc.target,
+    effects: keep.join(', '),
+    once: once
+  };
+}
+
+/* typed input → choice.  Numbers, exact label/alias, then word-subsequence.
+   More than one candidate is reported as ambiguous instead of silently picking one. */
+function normPhrase(s, ignore){
+  const ig = {};
+  (ignore || []).forEach(function(w){ ig[w] = 1; });
+  return String(s).toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/).filter(function(w){ return w && !ig[w]; }).join(' ');
+}
+function isSubseq(a, b){
+  if (!a.length) return false;
+  let j = 0;
+  for (let i = 0; i < b.length; i++){ if (b[i] === a[j]) j++; if (j === a.length) return true; }
+  return false;
+}
+function matchChoice(input, choices, ignore){
+  const raw = String(input).trim();
+  if (/^\d+$/.test(raw)){
+    const i = parseInt(raw, 10) - 1;
+    return (i >= 0 && i < choices.length) ? { index: i } : { none: true };
+  }
+  const q = normPhrase(raw, ignore);
+  if (!q) return { none: true };
+  const forms = choices.map(function(c){
+    return [c.label].concat(c.aliases || []).map(function(f){ return normPhrase(f, ignore); }).filter(Boolean);
+  });
+  const exact = [];
+  forms.forEach(function(fs, i){ if (fs.indexOf(q) >= 0) exact.push(i); });
+  if (exact.length === 1) return { index: exact[0] };
+  if (exact.length > 1) return { ambiguous: exact };
+  const qw = q.split(' ');
+  const part = [];
+  forms.forEach(function(fs, i){ if (fs.some(function(f){ return isSubseq(qw, f.split(' ')); })) part.push(i); });
+  if (part.length === 1) return { index: part[0] };
+  if (part.length > 1) return { ambiguous: part };
+  return { none: true };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INTERPRETER
+   Deterministic: given the same source, seed and sequence of inputs the
+   run is identical. That is what makes save / restore / undo possible —
+   a save is {seed, history}, and loading replays it.
+   ═══════════════════════════════════════════════════════════════════ */
+function Interp(game, opts){
+  opts = opts || {};
+  this.game = game;
+  this.skipEffects = !!opts.skipEffects;
+  this.seed = (opts.seed != null) ? (opts.seed | 0)
+            : (game.seed != null) ? (game.seed | 0)
+            : ((Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) | 0);
+  this.rng = mulberry32(this.seed);
+  this.vars = {};
+  this.lists = {};
+  for (const k in game.lists) this.lists[k] = game.lists[k].slice();
+  this.visited = new Set();
+  this.visits = {};
+  this.used = new Set();            /* once-only choices and [once …] lines already spent */
+  this.passage = null;
+  this.steps = 0;
+  this._last = null;
+  this.typewriter = !!game.typewriterEnabled;
+  this.typewriterSpeed = game.typewriterSpeed || 30;
+
+  const ctx = this.ctx();
+  for (let i = 0; i < game.inits.length; i++){
+    try { this.vars[game.inits[i].name] = evalExpr(game.inits[i].src, ctx); }
+    catch(e){ this.vars[game.inits[i].name] = 0; }
+  }
+}
+
+Interp.prototype.ctx = function(){
+  const self = this;
+  return {
+    vars: self.vars,
+    lists: self.lists,
+    visited: self.visited,
+    visits: self.visits,
+    currentPassage: self.passage,
+    extras: { visits: self.visits[self.passage] || 0 },
+    rng: function(){ return self.rng(); }
+  };
+};
+
+/* Runs the lines of one passage (or one >> snippet). Returns {jump, choices, stop}. */
+Interp.prototype.runLines = function*(pass, ctx, o){
+  const self = this;
+  const g = this.game;
+  const legacy = g.format === 2;               /* format 2: every line is its own paragraph */
+  const choices = [];
+  const stack = [];
+  let jump = null;
+  let buf = '', have = false, hard = false;
+
+  const live = function(){
+    if (!stack.length) return true;
+    const top = stack[stack.length - 1];
+    return top.parentLive && top.taken;
+  };
+  const mkText = function(raw, style){
+    return {
+      type: 'text', text: unescapeText(raw), html: fmtHTML(raw), style: style,
+      typewriter: !style && self.typewriter && !self.skipEffects,
+      speed: self.typewriterSpeed
+    };
+  };
+  const flush = function*(){
+    if (!have) return;
+    const raw = buf;
+    buf = ''; have = false; hard = false;
+    yield mkText(raw);
+  };
+  const addText = function*(raw){
+    if (legacy){ yield mkText(raw); return; }
+    let hb = false;
+    if (raw.charAt(raw.length - 1) === '\\'){ raw = raw.slice(0, -1).replace(/\s+$/, ''); hb = true; }
+    if (have) buf += (hard ? '\n' : ' ') + raw;
+    else { buf = raw; have = true; }
+    hard = hb;
+  };
+
+  scan: for (let li = 0; li < pass.lines.length; li++){
+    const item = pass.lines[li];
+    const k = classifyLine(item);
+    const t = item.text;
+    try {
+      if (k.kind === 'if'){
+        yield* flush();
+        const isLive = live();
+        const cond = isLive && !!evalCondition(k.cond, ctx);
+        stack.push({ parentLive: isLive, taken: cond });
+        continue;
+      }
+      if (k.kind === 'else'){
+        if (!stack.length) throw new Error('else without if');
+        yield* flush();
+        const top = stack[stack.length - 1];
+        if (top.parentLive) top.taken = !top.taken;
+        continue;
+      }
+      if (k.kind === 'end'){
+        if (!stack.length) throw new Error('end without if');
+        yield* flush();
+        stack.pop();
+        continue;
+      }
+      if (!live()) continue;
+
+      switch (k.kind){
+        case 'blank':
+          yield* flush();
+          break;
+
+        case 'verbatim':
+          yield* flush();
+          yield { type:'text', text: item.verbatim, html: escHtml(item.verbatim), style:'pre', typewriter:false, speed: self.typewriterSpeed };
+          break;
+
+        case 'text':
+        case 'badmode':
+          yield* addText(interp(t, ctx));
+          break;
+
+        case 'pause':
+          yield* flush();
+          if (!self.skipEffects && k.ms > 0) yield { type:'pause', ms: k.ms };
+          break;
+
+        case 'mode':
+          yield* flush();
+          if (k.mode === 'type'){ self.typewriter = true; }
+          else if (k.mode === 'normal'){ self.typewriter = false; }
+          else if (k.mode === 'fast'){ self.typewriter = true; self.typewriterSpeed = 15; }
+          else if (k.mode === 'slow'){ self.typewriter = true; self.typewriterSpeed = 60; }
+          break;
+
+        case 'input': {
+          yield* flush();
+          const spec = parsePromptLine(t);
+          if (!spec) throw new Error('malformed ? directive');
+          if (spec.prompt) yield mkText(interp(spec.prompt, ctx), 'prompt');
+          let answer;
+          for (;;){
+            answer = yield { type:'input', varName: spec.varName, prompt: spec.prompt, vtype: spec.vtype };
+            const s = String(answer == null ? '' : answer).trim();
+            if (spec.vtype === 'number' && !/^-?\d+(\.\d+)?$/.test(s)){
+              yield { type:'text', text:'Please enter a number.', html:'Please enter a number.', style:'sys' };
+              continue;
+            }
+            break;
+          }
+          if (spec.varName){
+            const s = String(answer == null ? '' : answer).trim();
+            if (spec.vtype === 'text') self.vars[spec.varName] = s;
+            else if (spec.vtype === 'number') self.vars[spec.varName] = Number(s);
+            else self.vars[spec.varName] = (s !== '' && /^-?\d+(\.\d+)?$/.test(s)) ? Number(s) : s;
+          }
+          if (spec.target){
+            if (o.snippet) throw new Error('-> is not allowed in a >> snippet');
+            jump = spec.target;
+            break scan;
+          }
+          break;
+        }
+
+        case 'choice': {
+          yield* flush();
+          if (o.snippet) throw new Error('choices are not allowed in a >> snippet');
+          const c = parseChoice(t, ctx);
+          if (!c) throw new Error('malformed choice');
+          c.n = item.n;
+          if (c.once && self.used.has('c' + item.n)) break;      /* already taken: hidden */
+          choices.push(c);
+          break;
+        }
+
+        case 'jump':
+          yield* flush();
+          if (o.snippet) throw new Error('-> is not allowed in a >> snippet');
+          jump = k.target;
+          break scan;
+
+        case 'call': {
+          yield* flush();
+          const sub = g.passages[k.target.toLowerCase()];
+          if (!sub) throw new Error('>> missing passage "' + k.target + '"');
+          if (o.depth >= 32) throw new Error('>> nested too deeply');
+          const r = yield* self.runLines(sub, ctx, { snippet: true, depth: o.depth + 1, entering: o.entering });
+          if (r.stop) return r;
+          break;
+        }
+
+        case 'effect': {
+          let src = k.src;
+          const m = src.trim().match(/^(once|enter)\s+([\s\S]+)$/);
+          if (m){
+            if (m[1] === 'once'){
+              if (self.used.has('e' + item.n)) break;
+              self.used.add('e' + item.n);
+            } else if (!o.entering) break;                        /* [enter …] only on arrival */
+            src = m[2];
+          }
+          applyEffects(src, ctx);
+          break;
+        }
+      }
+    } catch(e){
+      yield { type:'error', text:'line ' + item.n + ': ' + e.message };
+      return { stop: true };
+    }
+  }
+  yield* flush();
+  return { jump: jump, choices: choices, stop: false };
+};
+
+Interp.prototype.run = function*(){
+  const g = this.game;
+  let cur = (g.meta.start || (g.order[0] && g.order[0].key) || '').toLowerCase();
+  if (!cur){ yield { type:'error', text:'no passages defined' }; return; }
+
+  for (;;){
+    if (++this.steps > 500000){ yield { type:'error', text:'step limit exceeded' }; return; }
+    const pass = g.passages[cur];
+    if (!pass){ yield { type:'error', text:'missing passage: "' + cur + '"' }; return; }
+    this.passage = cur;
+
+    const entering = cur !== this._last;
+    if (entering){
+      this.visited.add(cur);
+      this.visits[cur] = (this.visits[cur] || 0) + 1;
+    }
+    this._last = cur;
+
+    const ctx = this.ctx();
+    const res = yield* this.runLines(pass, ctx, { snippet: false, depth: 0, entering: entering });
+    if (res.stop) return;
+
+    if (res.jump !== null){
+      if (res.jump.toUpperCase() === 'END'){ yield { type:'end' }; return; }
+      cur = res.jump.toLowerCase();
+      continue;
+    }
+    if (!res.choices.length){ yield { type:'end' }; return; }
+
+    const i = yield { type:'choice', choices: res.choices, passage: cur, parserMode: g.parserMode };
+    const c = res.choices[i];
+    if (!c){ yield { type:'error', text:'invalid choice' }; return; }
+    if (c.once) this.used.add('c' + c.n);
+    if (c.effects){
+      try { applyEffects(c.effects, this.ctx()); }
+      catch(e){ yield { type:'error', text:'line ' + c.n + ': ' + e.message }; return; }
+    }
+    if (c.target){
+      if (c.target.toUpperCase() === 'END'){ yield { type:'end' }; return; }
+      cur = c.target.toLowerCase();
+    }
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   REFERENCE PLAYER (DOM)
+   Used by both the IDE and every exported standalone game.
+     new TgamePlayer({ out, choices, form, input, scroll?,
+                       onStart?, onReset?, onChoice?, onEnd? })
+     player.start(game, { skipEffects?, seed?, replay?, hash? })
+     player.undo()  player.saveSlot()  player.loadSlot()
+   ═══════════════════════════════════════════════════════════════════ */
+function TgamePlayer(cfg){
+  const self = this;
+  this.cfg = cfg;
+  this.out = cfg.out;
+  this.choicesEl = cfg.choices;
+  this.form = cfg.form;
+  this.input = cfg.input;
+  this.run = 0;
+  this.game = null;
+  this.interp = null;
+  this.gen = null;
+  this.opts = {};
+  this.history = [];
+  this.replayQ = null;
+  this.pending = null;
+  this.awaiting = null;
+  this.tw = null;
+  this.ended = false;
+  this.reduced = !!(typeof window !== 'undefined' && window.matchMedia &&
+                    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  this.form.addEventListener('submit', function(e){
+    e.preventDefault();
+    self.submit(self.input.value);
+  });
+}
+
+TgamePlayer.prototype.scroll = function(){
+  if (this.cfg.scroll) this.cfg.scroll();
+  else this.out.scrollTop = this.out.scrollHeight;
+};
+
+TgamePlayer.prototype.print = function(text, cls){
+  const p = document.createElement('p');
+  if (cls) p.className = cls;
+  p.textContent = text;
+  this.out.appendChild(p);
+  this.scroll();
+  return p;
+};
+
+TgamePlayer.prototype.printEvent = function(v){
+  if (v.style === 'pre'){
+    const pre = document.createElement('pre');
+    pre.className = 'pre';
+    pre.textContent = v.text;
+    this.out.appendChild(pre);
+    this.scroll();
+    return;
+  }
+  if (v.style === 'sys'){ this.print(v.text, 'sys'); return; }
+  const p = document.createElement('p');
+  if (v.style === 'prompt') p.className = 'prompt';
+  p.innerHTML = v.html;
+  this.out.appendChild(p);
+  this.scroll();
+};
+
+/* progressive reveal; clicking the output finishes the paragraph */
+TgamePlayer.prototype.typewrite = function(html, speed, done){
+  const self = this;
+  const p = document.createElement('p');
+  p.className = 'tw';
+  p.innerHTML = html;
+  this.out.appendChild(p);
+
+  const chars = [];
+  const nodes = [];
+  const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  while ((node = walker.nextNode())) nodes.push(node);
+  for (let i = 0; i < nodes.length; i++){
+    const tn = nodes[i];
+    const frag = document.createDocumentFragment();
+    const value = tn.nodeValue;
+    for (let j = 0; j < value.length; j++){
+      const span = document.createElement('span');
+      span.textContent = value[j];
+      span.style.visibility = 'hidden';
+      frag.appendChild(span);
+      chars.push(span);
+    }
+    tn.parentNode.replaceChild(frag, tn);
+  }
+  let i = 0, finished = false, timer = null;
+  function finish(){
+    if (finished) return;
+    finished = true;
+    if (timer) clearInterval(timer);
+    for (let k = i; k < chars.length; k++) chars[k].style.visibility = 'visible';
+    self.out.removeEventListener('click', finish);
+    self.tw = null;
+    done();
+  }
+  timer = setInterval(function(){
+    if (i >= chars.length){ finish(); return; }
+    chars[i].style.visibility = 'visible';
+    i++;
+    self.scroll();
+  }, Math.max(1, speed));
+  this.out.addEventListener('click', finish);
+  this.tw = { finish: finish };
+};
+
+TgamePlayer.prototype.reset = function(){
+  this.run++;
+  if (this.tw){ const t = this.tw; this.tw = null; t.finish(); }
+  this.out.innerHTML = '';
+  this.choicesEl.innerHTML = '';
+  this.form.style.display = '';
+  this.form.classList.remove('awaiting');
+  this.input.value = '';
+  this.pending = null;
+  this.awaiting = null;
+  this.ended = false;
+  if (this.cfg.onReset) this.cfg.onReset();
+};
+
+TgamePlayer.prototype.start = function(game, opts){
+  opts = opts || {};
+  this.reset();
+  const my = this.run;
+  this.game = game;
+  this.opts = { skipEffects: !!opts.skipEffects, hash: opts.hash || '' };
+  this.history = [];
+  this.replayQ = opts.replay ? opts.replay.slice() : null;
+  const interp = new Interp(game, {
+    skipEffects: this.opts.skipEffects || !!(this.replayQ && this.replayQ.length),
+    seed: opts.seed
+  });
+  this.interp = interp;
+  this.gen = interp.run();
+  if (this.cfg.onStart) this.cfg.onStart(interp);
+  this.advance(my);
+  return interp;
+};
+
+TgamePlayer.prototype.replayDone = function(){
+  this.replayQ = null;
+  this.interp.skipEffects = this.opts.skipEffects;
+};
+
+TgamePlayer.prototype.advance = function(my, input){
+  const self = this;
+  for (;;){
+    if (my !== this.run) return;
+    let r;
+    try { r = this.gen.next(input); }
+    catch(e){ this.print('runtime error: ' + e.message, 'err'); this.finish(); return; }
+    input = undefined;
+    if (r.done){ this.finish(); return; }
+    const v = r.value;
+
+    if (v.type === 'text'){
+      if (v.typewriter && !this.reduced){
+        this.typewrite(v.html, v.speed || 30, function(){ self.advance(my); });
+        return;
+      }
+      this.printEvent(v);
+      continue;
+    }
+    if (v.type === 'pause'){
+      setTimeout(function(){ self.advance(my); }, v.ms);
+      return;
+    }
+    if (v.type === 'end'){ this.finish(); return; }
+    if (v.type === 'error'){ this.print('*** ' + v.text, 'err'); this.finish(); return; }
+
+    if (v.type === 'input'){
+      if (this.replayQ && this.replayQ.length){
+        const e = this.replayQ.shift();
+        if (e.t !== 'i'){ this.print('*** the save no longer matches this story', 'err'); this.finish(); return; }
+        this.print('> ' + e.v, 'echo');
+        this.history.push(e);
+        input = e.v;
+        continue;
+      }
+      if (this.replayQ) this.replayDone();
+      this.form.classList.add('awaiting');
+      this.input.placeholder = 'type your answer…';
+      this.input.value = '';
+      this.input.focus();
+      this.awaiting = function(answer){ self.advance(my, answer); };
+      return;
+    }
+
+    if (v.type === 'choice'){
+      if (this.replayQ && this.replayQ.length){
+        const e = this.replayQ.shift();
+        if (e.t !== 'c' || !v.choices[e.i]){ this.print('*** the save no longer matches this story', 'err'); this.finish(); return; }
+        this.print('> ' + v.choices[e.i].label, 'echo');
+        this.history.push(e);
+        input = e.i;
+        continue;
+      }
+      if (this.replayQ) this.replayDone();
+      this.pending = v;
+      this.renderChoices(v);
+      if (this.cfg.onChoice) this.cfg.onChoice(this.interp, v.passage);
+      return;
+    }
+  }
+};
+
+TgamePlayer.prototype.finish = function(){
+  this.print('— The End —', 'end');
+  this.form.style.display = 'none';
+  this.choicesEl.innerHTML = '';
+  this.pending = null;
+  this.awaiting = null;
+  this.ended = true;
+  if (this.cfg.onEnd) this.cfg.onEnd(this.interp);
+};
+
+TgamePlayer.prototype.renderChoices = function(v){
+  const self = this;
+  this.choicesEl.innerHTML = '';
+  if (v.parserMode){
+    this.input.placeholder = 'type a command (try "help")…';
+  } else {
+    v.choices.forEach(function(c, i){
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button';
+      const num = document.createElement('span');
+      num.className = 'num';
+      num.textContent = (i + 1) + '.';
+      const lab = document.createElement('span');
+      lab.textContent = c.label;
+      b.appendChild(num);
+      b.appendChild(lab);
+      b.onclick = function(){ self.pick(i); };
+      li.appendChild(b);
+      self.choicesEl.appendChild(li);
+    });
+    this.input.placeholder = 'type a command or number…';
+  }
+  const ae = document.activeElement;
+  const typing = ae && ae !== this.input &&
+    (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
+  if (!typing) this.input.focus({ preventScroll: true });
+};
+
+TgamePlayer.prototype.pick = function(i){
+  const p = this.pending;
+  if (!p || !p.choices[i]) return;
+  this.pending = null;
+  this.choicesEl.innerHTML = '';
+  this.print('> ' + p.choices[i].label, 'echo');
+  this.history.push({ t:'c', i: i });
+  this.advance(this.run, i);
+};
+
+TgamePlayer.prototype.help = function(){
+  const p = this.pending;
+  const extra = 'Also: undo · save · load';
+  if (!p){ this.print(extra, 'sys'); return; }
+  this.print('Commands available here:', 'sys');
+  p.choices.forEach(function(c, i){
+    this.print('  ' + (i + 1) + '  ' + c.label + (c.aliases && c.aliases.length ? '   (' + c.aliases.join(', ') + ')' : ''), 'sys');
+  }, this);
+  this.print(extra, 'sys');
+};
+
+TgamePlayer.prototype.submit = function(text){
+  if (this.tw) this.tw.finish();
+  const v = String(text == null ? '' : text);
+
+  if (this.awaiting){
+    const a = this.awaiting;
+    this.awaiting = null;
+    this.form.classList.remove('awaiting');
+    this.input.value = '';
+    this.input.placeholder = 'type a command or number…';
+    this.print('> ' + v, 'echo');
+    this.history.push({ t:'i', v: v });
+    a(v);
+    return;
+  }
+
+  const trimmed = v.trim();
+  if (!trimmed) return;
+  const low = trimmed.toLowerCase();
+  this.input.value = '';
+
+  if (low === 'help' || low === '?'){ this.help(); return; }
+  if (low === 'undo'){ this.undo(); return; }
+  if (low === 'save'){ this.saveSlot(); return; }
+  if (low === 'load' || low === 'restore'){ this.loadSlot(); return; }
+  if (!this.pending) return;
+
+  const m = matchChoice(trimmed, this.pending.choices, this.game.ignore);
+  if (m.index != null){ this.pick(m.index); return; }
+  if (m.ambiguous){
+    const labels = m.ambiguous.map(function(i){ return this.pending.choices[i].label; }, this);
+    this.print('Which do you mean? ' + labels.join(' / '), 'sys');
+    return;
+  }
+  this.print('I don\'t understand "' + trimmed + '".', 'sys');
+};
+
+/* ── undo / save / restore: all done by deterministic replay ── */
+TgamePlayer.prototype.undo = function(){
+  if (!this.game || !this.history.length){ this.print('Nothing to undo.', 'sys'); return false; }
+  this.start(this.game, {
+    seed: this.interp.seed,
+    replay: this.history.slice(0, -1),
+    skipEffects: this.opts.skipEffects,
+    hash: this.opts.hash
+  });
+  return true;
+};
+TgamePlayer.prototype.slotKey = function(){
+  return 'tgame.save:' + ((this.game && this.game.meta.title) || 'untitled');
+};
+TgamePlayer.prototype.saveData = function(){
+  return { v: 1, title: this.game.meta.title || '', seed: this.interp.seed,
+           hash: this.opts.hash || '', history: this.history.slice() };
+};
+TgamePlayer.prototype.saveSlot = function(){
+  if (!this.game) return false;
+  try {
+    localStorage.setItem(this.slotKey(), JSON.stringify(this.saveData()));
+    this.print('Game saved.', 'sys');
+    return true;
+  } catch(e){
+    this.print('Could not save: ' + e.message, 'err');
+    return false;
+  }
+};
+TgamePlayer.prototype.loadSlot = function(){
+  if (!this.game) return false;
+  let raw = null;
+  try { raw = localStorage.getItem(this.slotKey()); } catch(e){}
+  if (!raw){ this.print('No saved game found.', 'sys'); return false; }
+  let d;
+  try { d = JSON.parse(raw); } catch(e){ this.print('The saved game is damaged.', 'err'); return false; }
+  return this.loadData(d);
+};
+TgamePlayer.prototype.loadData = function(d){
+  if (!d || d.v !== 1 || !Array.isArray(d.history)){ this.print('Not a valid saved game.', 'err'); return false; }
+  const changed = d.hash && this.opts.hash && d.hash !== this.opts.hash;
+  this.start(this.game, {
+    seed: d.seed, replay: d.history,
+    skipEffects: this.opts.skipEffects, hash: this.opts.hash
+  });
+  if (changed) this.print('Note: the story changed since this save, so it may not line up.', 'sys');
+  return true;
+};
+</script>
+
+<script>
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════════════
+   LINTER
+   ═══════════════════════════════════════════════════════════════════ */
+const LINT_KW = new Set(['and','or','not','has','no','visited','visits','inventory','random','count','true','false']);
+
+/* identifiers an expression needs to be declared variables/lists, plus passages named by `visited` */
+function exprInfo(src){
+  const ids = [], visited = [];
+  const toks = String(src).match(TOKEN_RE) || [];
+  for (let i = 0; i < toks.length; i++){
+    const t = toks[i];
+    if (/^["']/.test(t) || /^\d/.test(t)) continue;
+    if (t === 'has'){
+      i++;
+      if (toks[i] === 'no') i++;
+      while (i < toks.length && (WORD_RE.test(toks[i]) || /^["']/.test(toks[i])) && toks[i] !== 'and' && toks[i] !== 'or') i++;
+      i--;
+      continue;
+    }
+    if (t === 'visited'){
+      i++;
+      let name = toks[i] || '';
+      while (toks[i + 1] === '-' && toks[i + 2] !== undefined && WORD_RE.test(toks[i + 2])){ name += '-' + toks[i + 2]; i += 2; }
+      if (name) visited.push(name.toLowerCase());
+      continue;
+    }
+    if (t === 'count'){ i++; continue; }
+    if (LINT_KW.has(t)) continue;
+    if (/^[\p{L}_]/u.test(t)) ids.push(t);
+  }
+  return { ids: ids, visited: visited };
+}
+
+/* every {…} group, innermost first */
+function inlineGroups(text){
+  const out = [];
+  let s = String(text), prev;
+  do {
+    prev = s;
+    s = s.replace(/\{([^{}]*)\}/g, function(_, inner){ out.push(inner.trim()); return '\u0001'; });
+  } while (s !== prev);
+  return out;
+}
+
+function lint(game){
+  const out = game.errors.slice();
+  const push = function(sev, n, msg){ out.push({ sev: sev, n: n, msg: msg }); };
+  const startKey = (game.meta.start || '').toLowerCase();
+
+  if (game.format == null) push('warn', 1, 'no @format directive — assuming format ' + TGAME_FORMAT + ' (add "@format ' + TGAME_FORMAT + '")');
+  if (!startKey) push('warn', 1, 'no @start directive — using the first passage');
+  else if (!game.passages[startKey]) push('error', 1, '@start passage "' + game.meta.start + '" doesn\'t exist');
+
+  const declared = new Set(Object.keys(game.vars));
+  const listNames = new Set(Object.keys(game.lists));
+  const used = new Map();                 /* name -> first line where used */
+  const visitedRefs = [];                 /* {name, n} */
+  const edges = new Map();
+  const calls = new Set();
+
+  const lintCtx = function(){
+    const lists = {};
+    listNames.forEach(function(k){ lists[k] = []; });
+    return { vars: {}, lists: lists, visited: new Set(), extras: { visits: 0 }, rng: function(){ return 0.5; } };
+  };
+  const note = function(info, n){
+    info.ids.forEach(function(id){ if (!used.has(id)) used.set(id, n); });
+    info.visited.forEach(function(v){ visitedRefs.push({ name: v, n: n }); });
+  };
+  const checkExpr = function(src, n, what){
+    try { evalExpr(src, lintCtx()); }
+    catch(e){ push('error', n, 'bad ' + what + ' "' + String(src).trim() + '": ' + e.message); return; }
+    note(exprInfo(src), n);
+  };
+  const checkEffects = function(src, n, isChoice){
+    splitTopLevel(String(src), [',', ';'], true).forEach(function(raw){
+      let e = raw.trim();
+      if (!e) return;
+      if (isChoice && e === 'once') return;
+      if (!isChoice) e = e.replace(/^(once|enter)\s+/, '');
+      let m;
+      if (/^get\s+\S/.test(e) || /^drop\s+\S/.test(e) || e === 'clear inventory') return;
+      if ((m = e.match(RX_LIST_OP)) || (m = e.match(RX_LIST_CLR))){
+        if (!listNames.has(m[1])) push('error', n, 'unknown list "' + m[1] + '" (declare it with @list ' + m[1] + ')');
+        return;
+      }
+      if ((m = e.match(RX_INCDEC))){ if (!used.has(m[1])) used.set(m[1], n); return; }
+      if ((m = e.match(RX_ASSIGN))){
+        if (!used.has(m[1])) used.set(m[1], n);
+        checkExpr(m[3], n, 'expression');
+        return;
+      }
+      push('error', n, 'unrecognized effect "' + e + '"');
+    });
+  };
+  const inlineBalance = { depth: 0, n: 0 };
+  const checkInline = function(text, n){
+    inlineGroups(text).forEach(function(g){
+      if (/^if\s/.test(g)){
+        inlineBalance.depth++; inlineBalance.n = n;
+        checkExpr(g.slice(3), n, 'condition');
+      }
+      else if (g === 'end'){ inlineBalance.depth--; }
+      else if (g === 'else' || g === 'inventory' || g === 'visits' || /^count\s/.test(g)){ /* ok */ }
+      else {
+        const parts = splitTopLevel(g, ['|']);
+        if (parts.length === 2 || parts.length === 3) checkExpr(parts[0], n, 'condition');
+        else if (parts.length === 1) {
+          try { evalExpr(g, lintCtx()); note(exprInfo(g), n); }
+          catch(e){ push('warn', n, 'bad {…} expression "{' + g + '}": ' + e.message); }
+        }
+      }
+    });
+  };
+
+  for (let pi = 0; pi < game.order.length; pi++){
+    const p = game.order[pi];
+    const stack = [];
+    const fromP = new Set();
+    inlineBalance.depth = 0;
+
+    for (let li = 0; li < p.lines.length; li++){
+      const item = p.lines[li];
+      const k = classifyLine(item);
+      const t = item.text;
+
+      switch (k.kind){
+        case 'blank': case 'verbatim': case 'pause': case 'mode': break;
+
+        case 'if':
+          stack.push(true);
+          checkExpr(k.cond, item.n, 'condition');
+          break;
+        case 'else':
+          if (!stack.length) push('error', item.n, 'else without a matching if');
+          break;
+        case 'end':
+          if (!stack.length) push('error', item.n, 'end without a matching if');
+          else stack.pop();
+          break;
+
+        case 'badmode':
+          push('warn', item.n, 'unknown mode "' + t + '" — use ~type, ~normal, ~fast or ~slow (escape with \\~ to print it)');
+          break;
+
+        case 'input': {
+          const spec = parsePromptLine(t);
+          if (!spec){ push('error', item.n, 'malformed ? directive'); break; }
+          if (spec.varName) declared.add(spec.varName);
+          if (spec.target && spec.target.toUpperCase() !== 'END') fromP.add(spec.target.toLowerCase());
+          if (spec.prompt) checkInline(spec.prompt, item.n);
+          break;
+        }
+
+        case 'jump':
+          if (k.target && k.target.toUpperCase() !== 'END') fromP.add(k.target.toLowerCase());
+          else if (!k.target) push('error', item.n, '-> needs a target');
+          break;
+
+        case 'call':
+          if (!k.target){ push('error', item.n, '>> needs a passage name'); break; }
+          calls.add(k.target.toLowerCase());
+          fromP.add(k.target.toLowerCase());
+          break;
+
+        case 'choice': {
+          const sc = splitChoice(t);
+          const labelParts = splitTopLevel(sc.label, ['|']);
+          if (!labelParts[0].trim()) push('error', item.n, 'choice has no label');
+          labelParts.forEach(function(lp){ checkInline(lp, item.n); });
+          if (sc.target !== null){
+            if (!sc.target) push('error', item.n, 'choice has an empty target');
+            else if (sc.target.toUpperCase() !== 'END') fromP.add(sc.target.toLowerCase());
+          }
+          if (sc.effects) checkEffects(sc.effects, item.n, true);
+          break;
+        }
+
+        case 'effect':
+          checkEffects(k.src, item.n, false);
+          break;
+
+        default:   /* narration */
+          checkInline(t, item.n);
+      }
+    }
+
+    if (stack.length)
+      push('error', p.n, 'passage "' + p.name + '" has ' + stack.length + ' unclosed if block(s)');
+    if (inlineBalance.depth !== 0)
+      push('warn', inlineBalance.n || p.n, 'passage "' + p.name + '" has an unbalanced {if …}…{end} in its text');
+    edges.set(p.key, fromP);
+  }
+
+  /* missing targets */
+  edges.forEach(function(targets, from){
+    targets.forEach(function(t){
+      if (!game.passages[t]){
+        const pass = game.passages[from];
+        push('error', pass.n, '"' + pass.name + '" links to missing passage "' + t + '"');
+      }
+    });
+  });
+  visitedRefs.forEach(function(r){
+    if (!game.passages[r.name]) push('warn', r.n, '"visited ' + r.name + '" refers to a passage that doesn\'t exist');
+  });
+
+  /* >> snippet passages may not contain choices or jumps */
+  calls.forEach(function(key){
+    const sp = game.passages[key];
+    if (!sp) return;
+    for (let li = 0; li < sp.lines.length; li++){
+      const k = classifyLine(sp.lines[li]);
+      if (k.kind === 'choice' || k.kind === 'jump'){
+        push('error', sp.lines[li].n, 'passage "' + sp.name + '" is called with >> so it can\'t contain choices or ->');
+        break;
+      }
+      if (k.kind === 'input'){
+        const spec = parsePromptLine(sp.lines[li].text);
+        if (spec && spec.target){ push('error', sp.lines[li].n, 'passage "' + sp.name + '" is called with >> so its ? line can\'t jump'); break; }
+      }
+    }
+  });
+
+  /* reachability from @start */
+  const root = startKey || (game.order[0] && game.order[0].key);
+  if (root){
+    const seen = new Set();
+    const stk = [root];
+    while (stk.length){
+      const key = stk.pop();
+      if (seen.has(key) || !game.passages[key]) continue;
+      seen.add(key);
+      (edges.get(key) || new Set()).forEach(function(t){ stk.push(t); });
+    }
+    game.order.forEach(function(p){
+      if (!seen.has(p.key)) push('warn', p.n, 'passage "' + p.name + '" is unreachable from @start');
+    });
+  }
+
+  /* undeclared variables (case-sensitive, with a did-you-mean) */
+  const lowerDeclared = {};
+  declared.forEach(function(d){ lowerDeclared[d.toLowerCase()] = d; });
+  used.forEach(function(n, name){
+    if (declared.has(name) || listNames.has(name)) return;
+    const hint = lowerDeclared[name.toLowerCase()];
+    push('warn', n, 'variable "' + name + '" is used but never declared with @set' +
+         (hint ? ' — did you mean "' + hint + '"? (variable names are case-sensitive)' : ''));
+  });
+
+  out.sort(function(a, b){ return a.n - b.n || (a.sev === 'error' ? -1 : 1); });
+  return out;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATIC HIGHLIGHTER
+   ═══════════════════════════════════════════════════════════════════ */
+function esc(s){ return escHtml(s); }
+function hlText(raw){
+  return esc(raw).replace(/\{(\w+)\}/g, '<span class="tx-var">{$1}</span>');
+}
+function highlight(src){
+  return String(src).split('\n').map(function(line){
+    if (line.trim().startsWith('//')) return '<span style="color:var(--syn-comment)">' + esc(line) + '</span>';
+    return hlText(line);
+  }).join('\n');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CODEMIRROR — tgame mode (line-aware, so prose is never mistaken for syntax)
+   ═══════════════════════════════════════════════════════════════════ */
+if (typeof CodeMirror !== 'undefined'){
+  CodeMirror.defineMode('tgame', function(){
+    const COND_KW = /^(and|or|not|has|no)\b/;
+    const COND_ATOM = /^(visited|visits|inventory|random|count|true|false)\b/;
+    const EFFECT_KW = /^(get|drop|add|remove|clear|once|enter)\b/;
+    return {
+      startState: function(){ return { kind: null, fence: false }; },
+      token: function(stream, state){
+        if (stream.sol()){
+          state.kind = null;
+          if (state.fence){
+            if (stream.match(/^\s*```\s*$/)){ state.fence = false; return 'meta'; }
+            stream.skipToEnd();
+            return 'string';
+          }
+          if (stream.match(/^\s*```\s*$/)){ state.fence = true; return 'meta'; }
+          if (stream.match(/^\s*\/\//)){ stream.skipToEnd(); return 'comment'; }
+          if (stream.match(/^\s*\\/)){ state.kind = 'text'; return 'string-2'; }
+          if (stream.match(/^\s*@\w+/)){ state.kind = 'directive'; return 'keyword'; }
+          if (stream.match(/^\s*::/)){ state.kind = 'passage'; return 'keyword'; }
+          if (stream.match(/^\s*\*/)){ state.kind = 'choice'; return 'keyword'; }
+          if (stream.match(/^\s*\?(?=\s)/)){ state.kind = 'input'; return 'keyword'; }
+          if (stream.match(/^\s*(->|>>)/)){ state.kind = 'jump'; return 'keyword'; }
+          if (stream.match(/^\s*\.\.\.(\s.*)?$/)){ return 'atom'; }
+          if (stream.match(/^\s*~\w+\s*$/)){ return 'atom'; }
+          if (/^\s*if\s.*:\s*$/.test(stream.string)){ stream.match(/^\s*if\b/); state.kind = 'cond'; return 'keyword'; }
+          if (stream.match(/^\s*(else:|end)\s*$/)){ return 'keyword'; }
+          if (/^\s*\[.*\]\s*$/.test(stream.string)){ stream.match(/^\s*\[/); state.kind = 'effect'; return 'meta'; }
+          state.kind = 'text';
+        }
+
+        const k = state.kind;
+        if (stream.match(/^\\./)) return 'string-2';
+
+        if (k === 'text' || k === 'choice' || k === 'input' || k === 'jump'){
+          if (stream.match(/^\{[^{}]*\}/)) return 'variable-2';
+          if (k !== 'text'){
+            if (stream.match('->')) return 'keyword';
+            if (stream.match(/^\[[^\]]*\]/)) return 'meta';
+            if (k === 'choice' && stream.match('|')) return 'operator';
+          }
+          if (stream.match(/^\*\*[^*]+\*\*/)) return 'strong';
+          if (stream.match(/^\*[^*]+\*/)) return 'em';
+          stream.next();
+          return null;
+        }
+        if (k === 'cond'){
+          if (stream.eatSpace()) return null;
+          if (stream.match(COND_KW)) return 'keyword';
+          if (stream.match(COND_ATOM)) return 'atom';
+          if (stream.match(/^\d+(\.\d+)?/)) return 'number';
+          if (stream.match(/^("[^"]*"|'[^']*')/)) return 'string';
+          if (stream.match(/^[\p{L}_][\p{L}\p{N}_]*/u)) return 'variable-2';
+          stream.next();
+          return 'operator';
+        }
+        if (k === 'effect'){
+          if (stream.eatSpace()) return null;
+          if (stream.match(EFFECT_KW)) return 'keyword';
+          if (stream.match(/^\d+(\.\d+)?/)) return 'number';
+          if (stream.match(/^("[^"]*"|'[^']*')/)) return 'string';
+          if (stream.match(/^[\p{L}_][\p{L}\p{N}_]*/u)) return 'variable-2';
+          if (stream.match(']')) return 'meta';
+          stream.next();
+          return 'operator';
+        }
+        if (k === 'directive'){
+          if (stream.eatSpace()) return null;
+          if (stream.match(/^\d+(\.\d+)?/)) return 'number';
+          if (stream.match(/^("[^"]*"|'[^']*')/)) return 'string';
+          if (stream.match(/^(true|false)\b/)) return 'atom';
+          if (stream.match(/^[\p{L}_][\p{L}\p{N}_]*/u)) return 'variable-2';
+          stream.next();
+          return 'operator';
+        }
+        if (k === 'passage'){
+          if (stream.eatSpace()) return null;
+          if (stream.match(/^#[\p{L}\p{N}_-]+/u)) return 'meta';
+          if (stream.match(/^[\p{L}\p{N}_-]+/u)) return 'def';
+          stream.next();
+          return null;
+        }
+        stream.next();
+        return null;
+      }
+    };
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════════ */
+const $ = function(id){ return document.getElementById(id); };
+const app       = $('app');
+const outEl     = $('out');
+const choicesEl = $('choices');
+const cmdForm   = $('cmd-form');
+const cmdEl     = $('cmd');
+
+let cm              = null;
+let currentText     = '';
+let lastGame        = null;
+let lastProblems    = [];
+let currentPassage  = null;
+let errorLines      = new Set();
+let fileName        = 'untitled.tgame';
+let currentActivity = 'story';
+let sidebarHidden   = false;
+let runGeneration   = 0;
+let startVarsRef    = null;
+let startListsRef   = null;
+let passageFilter   = '';
+
+/* ═══════════════════════════════════════════════════════════════════
+   EDITOR
+   ═══════════════════════════════════════════════════════════════════ */
+function initEditor(){
+  const placeholder = $('editor-placeholder');
+  if (typeof CodeMirror === 'undefined'){
+    placeholder.textContent = 'Could not load CodeMirror from CDN — check your internet connection.';
+    return;
+  }
+  placeholder.style.display = 'none';
+
+  cm = CodeMirror.fromTextArea($('src'), {
+    mode: 'tgame',
+    lineNumbers: true,
+    lineWrapping: false,
+    indentUnit: 2,
+    tabSize: 2,
+    indentWithTabs: false,
+    viewportMargin: 10,
+    autofocus: true,
+    extraKeys: {
+      'Tab': function(instance){ instance.replaceSelection('  ', 'end'); },
+      'Shift-Tab': function(instance){
+        const cur = instance.getCursor();
+        const line = instance.getLine(cur.line);
+        const strip = line.match(/^ {1,2}/);
+        if (strip) instance.replaceRange('', {line: cur.line, ch: 0}, {line: cur.line, ch: strip[0].length});
+      }
+    }
+  });
+
+  cm.on('change', onEdit);
+  cm.on('cursorActivity', updateStatusPosition);
+  cm.on('focus', updateStatusPosition);
+  setTimeout(function(){ cm.refresh(); }, 0);
+}
+
+function onEdit(){
+  currentText = cm.getValue();
+  updateStatusPosition();
+  updateBreadcrumbs();
+  markDirty();
+  updateStats();
+  scheduleLint();
+  scheduleAutosave();
+  if ($('auto-run').checked) scheduleRun();
+}
+
+function updateStatusPosition(){
+  if (!cm) return;
+  const pos = cm.getCursor();
+  $('st-position').textContent = 'Ln ' + (pos.line + 1) + ', Col ' + (pos.ch + 1);
+}
+
+function applyErrorMarkers(){
+  if (!cm) return;
+  cm.operation(function(){
+    for (let i = 0; i < cm.lineCount(); i++){
+      cm.removeLineClass(i, 'background', 'cm-error-line');
+      cm.removeLineClass(i, 'gutter', 'cm-error-gutter');
+    }
+    errorLines.forEach(function(n){
+      if (n >= 1 && n <= cm.lineCount()){
+        cm.addLineClass(n - 1, 'background', 'cm-error-line');
+        cm.addLineClass(n - 1, 'gutter', 'cm-error-gutter');
+      }
+    });
+  });
+}
+
+function jumpToLine(n){
+  if (!cm) return;
+  cm.setCursor({ line: n - 1, ch: 0 });
+  cm.scrollIntoView({ line: n - 1, ch: 0 }, 120);
+  cm.focus();
+}
+
+function applySource(text){
+  if (!cm) return;
+  currentText = text;
+  cm.setValue(text);
+  cm.clearHistory();
+  cm.setCursor({ line: 0, ch: 0 });
+  cm.refresh();
+  updateStatusPosition();
+  updateStats();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BREADCRUMBS / DIRTY / STATS
+   ═══════════════════════════════════════════════════════════════════ */
+function updateBreadcrumbs(){
+  const bc = $('breadcrumbs');
+  let html = '<span class="crumb">' + esc(fileName) + '</span>';
+  if (currentPassage && lastGame){
+    const p = lastGame.passages[currentPassage];
+    if (p) html += '<span class="sep">›</span><span class="crumb last active">' + esc(p.name) + '</span>';
+  }
+  bc.innerHTML = html;
+}
+function markDirty(){ $('file-tab').classList.add('dirty'); }
+function clearDirty(){ $('file-tab').classList.remove('dirty'); }
+function updateStats(){
+  const words = currentText.split(/\s+/).filter(Boolean).length;
+  const game = lastGame || { order: [] };
+  $('st-stats').textContent =
+    game.order.length + ' passage' + (game.order.length === 1 ? '' : 's') +
+    ' · ' + words.toLocaleString() + ' words';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PLAY — the IDE hosts the same TgamePlayer that exported games use
+   ═══════════════════════════════════════════════════════════════════ */
+const player = new TgamePlayer({
+  out: outEl, choices: choicesEl, form: cmdForm, input: cmdEl,
+  scroll: function(){ outEl.scrollTop = outEl.scrollHeight; },
+  onReset: function(){
+    currentPassage = null;
+    updateBreadcrumbs();
+  },
+  onStart: function(interp){
+    startVarsRef  = Object.assign({}, interp.vars);
+    startListsRef = {};
+    for (const k in interp.lists) startListsRef[k] = interp.lists[k].slice();
+    renderVars(interp);
+  },
+  onChoice: function(interp, passage){
+    currentPassage = passage;
+    updateBreadcrumbs();
+    highlightInSidebar(passage);
+    renderVars(interp);
+  },
+  onEnd: function(interp){
+    currentPassage = null;
+    updateBreadcrumbs();
+    renderVars(interp);
+  }
+});
+
+function runGame(opts){
+  opts = opts || {};
+  let game, problems;
+  try {
+    game = parse(currentText);
+    problems = lint(game);
+  } catch(e){
+    player.reset();
+    player.print('parse failure: ' + e.message, 'err');
+    return;
+  }
+  lastGame = game;
+  lastProblems = problems;
+  renderSidebar(game, problems);
+  updateStats();
+
+  const errors = problems.filter(function(p){ return p.sev === 'error'; });
+  if (errors.length){
+    player.reset();
+    player.print(errors.length + ' error' + (errors.length > 1 ? 's' : '') + '. Check the Problems view.', 'err');
+    return;
+  }
+  player.start(game, { skipEffects: !!opts.skipEffects, hash: hashStr(currentText) });
+}
+
+$('btn-undo').onclick = function(){ player.undo(); };
+$('btn-save-game').onclick = function(){ player.saveSlot(); };
+$('btn-load-game').onclick = function(){ player.loadSlot(); };
+
+/* ═══════════════════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════════════════ */
+function buildEdges(game){
+  const edges = new Map();
+  const callTargets = new Set();
+  for (let pi = 0; pi < game.order.length; pi++){
+    const p = game.order[pi];
+    const targets = new Set();
+    for (let li = 0; li < p.lines.length; li++){
+      const item = p.lines[li];
+      const k = classifyLine(item);
+      if (k.kind === 'jump'){
+        const target = k.target.toLowerCase();
+        if (target && target !== 'end') targets.add(target);
+      } else if (k.kind === 'call'){
+        const target = k.target.toLowerCase();
+        if (target){ targets.add(target); callTargets.add(target); }
+      } else if (k.kind === 'input'){
+        const spec = parsePromptLine(item.text);
+        if (spec && spec.target && spec.target.toUpperCase() !== 'END') targets.add(spec.target.toLowerCase());
+      } else if (k.kind === 'choice'){
+        const sc = splitChoice(item.text);
+        if (sc.target && sc.target.toUpperCase() !== 'END') targets.add(sc.target.toLowerCase());
+      }
+    }
+    edges.set(p.key, targets);
+  }
+  for (let pi = 0; pi < game.order.length; pi++){
+    game.order[pi].isSnippet = callTargets.has(game.order[pi].key);
+  }
+  return edges;
+}
+
+/* an ending is an explicit -> END, or a passage that has no choices and no jump */
+function isEnding(passage){
+  if (passage.isSnippet) return false;
+  let hasExit = false;
+  for (let i = 0; i < passage.lines.length; i++){
+    const item = passage.lines[i];
+    const k = classifyLine(item);
+    if (k.kind === 'jump'){
+      if (k.target.toUpperCase() === 'END') return true;
+      hasExit = true;
+    } else if (k.kind === 'input'){
+      const spec = parsePromptLine(item.text);
+      if (spec && spec.target){
+        if (spec.target.toUpperCase() === 'END') return true;
+        hasExit = true;
+      }
+    } else if (k.kind === 'choice'){
+      const sc = splitChoice(item.text);
+      if (sc.target && sc.target.toUpperCase() === 'END') return true;
+      hasExit = true;
+    }
+  }
+  return !hasExit;
+}
+
+function renderSidebar(game, problems){
+  const startKey = (game.meta.start || '').toLowerCase();
+  const edges = buildEdges(game);
+  const reachable = new Set();
+  const root = startKey || (game.order[0] && game.order[0].key);
+  if (root){
+    const stack = [root];
+    while (stack.length){
+      const k = stack.pop();
+      if (reachable.has(k) || !game.passages[k]) continue;
+      reachable.add(k);
+      for (const t of (edges.get(k) || [])) stack.push(t);
+    }
+  }
+
+  const tree = $('story-tree');
+  tree.innerHTML = '';
+  $('story-count').textContent = game.order.length || '';
+  const filter = passageFilter.toLowerCase();
+  const visible = game.order.filter(function(p){
+    return !filter || p.name.toLowerCase().indexOf(filter) >= 0;
+  });
+
+  if (!game.order.length){
+    tree.innerHTML = '<div class="empty-state">No passages yet. Start one with <code>:: start</code></div>';
+  } else if (!visible.length){
+    tree.innerHTML = '<div class="empty-state">No passages match "' + esc(passageFilter) + '".</div>';
+  } else {
+    for (let i = 0; i < visible.length; i++){
+      const p = visible[i];
+      const isStart = p.key === startKey;
+      const ending = isEnding(p);
+      const unreachable = !reachable.has(p.key);
+      const el = document.createElement('div');
+      el.className = 'row passage';
+      el.dataset.key = p.key;
+      let icon;
+      if (isStart) icon = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l8 6-8 6z"/></svg>';
+      else if (ending) icon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="10" height="10" rx="1.5"/></svg>';
+      else icon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/></svg>';
+      const iconCls = isStart ? 'icon start' : (ending ? 'icon ending' : 'icon');
+      el.innerHTML = '<span class="' + iconCls + '">' + icon + '</span>' +
+                     '<span class="label">' + esc(p.name) + '</span>' +
+                     '<span class="meta">' + (p.tags && p.tags.length ? esc(p.tags.map(function(t){ return '#' + t; }).join(' ')) + ' · ' : '') + p.n + '</span>';
+      if (unreachable) el.style.opacity = '0.55';
+      el.onclick = (function(line){ return function(){ jumpToLine(line); }; })(p.n);
+      tree.appendChild(el);
+    }
+  }
+  if (currentPassage) highlightInSidebar(currentPassage);
+
+  renderMap(game, edges, reachable, startKey);
+
+  const pl = $('problems-list');
+  pl.innerHTML = '';
+  const errCount = problems.filter(function(p){ return p.sev === 'error'; }).length;
+  const warnCount = problems.filter(function(p){ return p.sev === 'warn'; }).length;
+  const countEl = $('problems-count');
+  countEl.textContent = problems.length
+    ? (errCount ? errCount + ' ✕, ' + warnCount + ' ⚠' : warnCount + ' ⚠') : '';
+  countEl.style.color = errCount ? '#f48771' : (warnCount ? '#d7ba7d' : '');
+
+  if (!problems.length){
+    pl.innerHTML = '<div class="empty-state">No problems detected in the workspace.</div>';
+  } else {
+    for (let i = 0; i < problems.length; i++){
+      const p = problems[i];
+      const el = document.createElement('div');
+      el.className = 'row problem ' + p.sev;
+      el.innerHTML =
+        '<span class="icon">' + (p.sev === 'error'
+          ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6"/><path d="M6 6l4 4M10 6l-4 4"/></svg>'
+          : '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2L1 14h14z"/><path d="M8 6v4M8 12v.01"/></svg>'
+        ) + '</span>' +
+        '<span class="body"><span class="where">Ln ' + p.n + '</span>' + esc(p.msg) + '</span>';
+      el.onclick = (function(line){ return function(){ jumpToLine(line); }; })(p.n);
+      pl.appendChild(el);
+    }
+  }
+
+  const abBadge = $('ab-badge-problems');
+  const total = errCount + warnCount;
+  if (total > 0){
+    abBadge.textContent = total;
+    abBadge.className = 'badge on' + (errCount ? '' : ' warn');
+  } else abBadge.className = 'badge';
+
+  $('st-problems-text').textContent = errCount
+    ? errCount + ' ✕, ' + warnCount + ' ⚠'
+    : (warnCount ? warnCount + ' ⚠' : '0');
+
+  errorLines = new Set(problems.filter(function(p){ return p.sev === 'error'; }).map(function(p){ return p.n; }));
+  applyErrorMarkers();
+}
+
+function renderMap(game, edges, reachable, startKey){
+  const wrap = $('map-wrap');
+  if (!game.order.length){
+    wrap.innerHTML = '<div class="empty-state" style="text-align:center">No passages to map yet.</div>';
+    return;
+  }
+  const levels = [];
+  const seen = new Set();
+  const root = startKey || game.order[0].key;
+  let cur = root ? [root] : [];
+  if (root) seen.add(root);
+  let guard = 0;
+  while (cur.length && guard++ < 200){
+    levels.push(cur);
+    const next = [];
+    for (let i = 0; i < cur.length; i++){
+      const arr = Array.from(edges.get(cur[i]) || new Set());
+      for (let ti = 0; ti < arr.length; ti++){
+        const t = arr[ti];
+        if (!seen.has(t) && game.passages[t]){ seen.add(t); next.push(t); }
+      }
+    }
+    cur = next;
+  }
+  const unreached = game.order.filter(function(p){ return !seen.has(p.key); }).map(function(p){ return p.key; });
+  if (unreached.length) levels.push(unreached);
+
+  const R = 10, HG = 22, VG = 64, PAD = 24;
+  const levelWidths = levels.map(function(l){ return l.length * R * 2 + (l.length - 1) * HG; });
+  const maxLevelW = Math.max.apply(null, levelWidths.concat([80]));
+  const totalW = maxLevelW + PAD * 2;
+  const totalH = PAD * 2 + levels.length * VG;
+
+  const positions = new Map();
+  for (let li = 0; li < levels.length; li++){
+    const level = levels[li];
+    const lw = levelWidths[li];
+    const startX = PAD + (maxLevelW - lw) / 2;
+    const y = PAD + li * VG + R;
+    for (let ki = 0; ki < level.length; ki++){
+      positions.set(level[ki], { x: startX + ki * (R * 2 + HG) + R, y: y });
+    }
+  }
+  let svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + totalW + '" height="' + totalH +
+            '" viewBox="0 0 ' + totalW + ' ' + totalH + '">';
+  const edgeIter = Array.from(edges.entries());
+  for (let ei = 0; ei < edgeIter.length; ei++){
+    const from = edgeIter[ei][0];
+    const fp = positions.get(from);
+    if (!fp) continue;
+    const arr = Array.from(edgeIter[ei][1]);
+    for (let ti = 0; ti < arr.length; ti++){
+      const tp = positions.get(arr[ti]);
+      if (!tp) continue;
+      svg += '<path class="map-edge" d="M ' + fp.x + ' ' + (fp.y + R) + ' L ' + tp.x + ' ' + (tp.y - R) + '"/>';
+    }
+  }
+  for (let pi = 0; pi < game.order.length; pi++){
+    const p = game.order[pi];
+    const pos = positions.get(p.key);
+    if (!pos) continue;
+    const isStart = p.key === startKey;
+    const ending = isEnding(p);
+    const unreachable = !reachable.has(p.key);
+    let cls = 'map-node';
+    if (isStart) cls += ' is-start';
+    else if (ending) cls += ' is-end';
+    if (unreachable) cls += ' is-unreachable';
+    svg += '<circle class="' + cls + '" cx="' + pos.x + '" cy="' + pos.y + '" r="' + R + '" data-key="' + esc(p.key) + '"/>';
+    svg += '<text class="map-label' + (isStart ? ' is-start' : '') + '" x="' + pos.x + '" y="' + (pos.y + R + 13) + '" data-key="' + esc(p.key) + '">' + esc(p.name) + '</text>';
+  }
+  svg += '</svg>';
+  wrap.innerHTML = svg;
+  const clickables = wrap.querySelectorAll('[data-key]');
+  for (let i = 0; i < clickables.length; i++){
+    const el = clickables[i];
+    el.onclick = function(){
+      const p = game.passages[el.dataset.key];
+      if (p) jumpToLine(p.n);
+    };
+  }
+}
+
+function highlightInSidebar(key){
+  const rows = document.querySelectorAll('#story-tree .row.passage');
+  for (let i = 0; i < rows.length; i++){
+    rows[i].classList.toggle('active', rows[i].dataset.key === key);
+  }
+  const nodes = document.querySelectorAll('#map-wrap .map-node');
+  for (let i = 0; i < nodes.length; i++){
+    nodes[i].style.strokeWidth = nodes[i].dataset.key === key ? '3' : '';
+  }
+}
+
+function renderVars(interp){
+  const vl = $('vars-list');
+  if (!interp || !interp.vars){
+    vl.innerHTML = '<div class="empty-state">Run the game to inspect its variables.</div>';
+    return;
+  }
+  const varKeys = Object.keys(interp.vars).sort();
+  const listKeys = Object.keys(interp.lists).sort();
+  if (!varKeys.length && !listKeys.length){
+    vl.innerHTML = '<div class="empty-state">No variables declared.</div>';
+    return;
+  }
+  let html = '<div class="vars-list">';
+  for (let i = 0; i < varKeys.length; i++){
+    const k = varKeys[i];
+    const changed = startVarsRef && startVarsRef[k] !== interp.vars[k];
+    html += '<div class="vars-row' + (changed ? ' changed' : '') + '">'
+          + '<span class="k">' + esc(k) + '</span>'
+          + '<span class="v">' + esc(String(interp.vars[k])) + '</span>'
+          + '</div>';
+  }
+  for (let i = 0; i < listKeys.length; i++){
+    const k = listKeys[i];
+    const cur = (interp.lists[k] || []).join(', ') || '—';
+    const startArr = startListsRef && startListsRef[k] ? startListsRef[k].join(', ') : '';
+    const changed = startListsRef && startArr !== cur;
+    html += '<div class="vars-row' + (changed ? ' changed' : '') + '">'
+          + '<span class="k">' + esc(k) + '[]</span>'
+          + '<span class="v">' + esc(cur) + '</span>'
+          + '</div>';
+  }
+  html += '</div>';
+  vl.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACTIVITY / LAYOUT
+   ═══════════════════════════════════════════════════════════════════ */
+function setActivity(view){
+  if (currentActivity === view && !sidebarHidden){ sidebarHidden = true; }
+  else { currentActivity = view; sidebarHidden = false; }
+  applyLayout();
+}
+function applyLayout(){
+  app.classList.toggle('sidebar-hidden', sidebarHidden);
+  app.classList.toggle('sidebar-open', !sidebarHidden);
+  const activities = document.querySelectorAll('.activity[data-activity]');
+  for (let i = 0; i < activities.length; i++){
+    const el = activities[i];
+    el.classList.toggle('active', el.dataset.activity === currentActivity && !sidebarHidden);
+  }
+  const views = document.querySelectorAll('.sidebar-view');
+  for (let i = 0; i < views.length; i++){
+    views[i].classList.toggle('active', views[i].dataset.view === currentActivity);
+  }
+}
+document.querySelectorAll('.activity[data-activity]').forEach(function(el){
+  el.onclick = function(){ setActivity(el.dataset.activity); };
+});
+document.querySelectorAll('.section-head[data-toggle]').forEach(function(h){
+  h.onclick = function(){ h.parentElement.classList.toggle('collapsed'); };
+});
+$('passage-search').addEventListener('input', function(e){
+  passageFilter = e.target.value;
+  if (lastGame) renderSidebar(lastGame, lastProblems);
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   PANEL RESIZE
+   ═══════════════════════════════════════════════════════════════════ */
+(function(){
+  const resizer = $('panel-resizer');
+  let dragging = false, startY = 0, startH = 0;
+  resizer.addEventListener('mousedown', function(e){
+    dragging = true; startY = e.clientY;
+    startH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--panel-h')) || 260;
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+    resizer.classList.add('dragging');
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', function(e){
+    if (!dragging) return;
+    const dy = startY - e.clientY;
+    const h = Math.max(60, Math.min(window.innerHeight - 200, startH + dy));
+    document.documentElement.style.setProperty('--panel-h', h + 'px');
+  });
+  window.addEventListener('mouseup', function(){
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    resizer.classList.remove('dragging');
+  });
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   DEBOUNCED
+   ═══════════════════════════════════════════════════════════════════ */
+let lintTimer = null, runTimer = null, saveTimer = null, savedFlashTimer = null;
+function scheduleLint(){
+  clearTimeout(lintTimer);
+  lintTimer = setTimeout(function(){
+    try {
+      const game = parse(currentText);
+      const problems = lint(game);
+      lastGame = game;
+      lastProblems = problems;
+      renderSidebar(game, problems);
+      updateStats();
+    } catch(e){}
+  }, 220);
+}
+function scheduleRun(){
+  clearTimeout(runTimer);
+  runTimer = setTimeout(function(){
+    // Auto-run skips pauses and typewriter — those are for the player.
+    runGame({ skipEffects: true });
+  }, 700);
+}
+function scheduleAutosave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    try {
+      localStorage.setItem('tgame.source', currentText);
+      localStorage.setItem('tgame.name', fileName);
+      const el = $('st-saved');
+      el.style.transition = 'opacity .15s';
+      el.style.opacity = '1';
+      clearTimeout(savedFlashTimer);
+      savedFlashTimer = setTimeout(function(){ el.style.opacity = '0'; }, 800);
+      clearDirty();
+    } catch(e){}
+  }, 500);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FILES
+   ═══════════════════════════════════════════════════════════════════ */
+function setFileName(n){
+  fileName = n;
+  $('tab-name').textContent = n;
+  updateBreadcrumbs();
+  if (lastGame) renderSidebar(lastGame, lastProblems);
+  document.title = n + ' — tgame studio';
+}
+function downloadFile(){
+  const blob = new Blob([currentText], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fileName || 'game.tgame';
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 500);
+  clearDirty();
+}
+function newFile(){
+  if (!confirm('Discard the current file and start a new one?')) return;
+  applySource(TEMPLATE_SOURCE);
+  setFileName('untitled.tgame');
+  scheduleLint();
+  scheduleAutosave();
+  runGame();
+}
+$('btn-run').onclick = function(){ runGame(); };
+$('btn-restart').onclick = function(){ runGame(); };
+$('btn-toggle-panel').onclick = function(){ app.classList.toggle('panel-hidden'); if (cm) cm.refresh(); };
+$('file-input').onchange = function(e){
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = function(){
+    applySource(r.result);
+    setFileName(f.name);
+    scheduleLint();
+    scheduleAutosave();
+    runGame();
+  };
+  r.readAsText(f);
+  e.target.value = '';
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   STANDALONE EXPORT
+   The exported page embeds the runtime verbatim (the <script id="tgame-runtime">
+   block above), so it is always byte-for-byte the engine the IDE tested.
+   ═══════════════════════════════════════════════════════════════════ */
+function buildStandalone(source){
+  const game = parse(source);
+  const title = game.meta.title || 'tgame';
+  const runtime = document.getElementById('tgame-runtime').textContent.replace(/<\/script/gi, '<\\/script');
+  const srcLit = JSON.stringify(source)
+    .replace(/<\//g, '<\\/')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+  const boot =
+    'var SOURCE = ' + srcLit + ';\n' +
+    '(function(){\n' +
+    '  var game = parse(SOURCE);\n' +
+    '  var player = new TgamePlayer({\n' +
+    '    out: document.getElementById("out"),\n' +
+    '    choices: document.getElementById("choices"),\n' +
+    '    form: document.getElementById("form"),\n' +
+    '    input: document.getElementById("cmd"),\n' +
+    '    scroll: function(){ window.scrollTo(0, document.body.scrollHeight); }\n' +
+    '  });\n' +
+    '  document.title = game.meta.title || "tgame";\n' +
+    '  player.start(game, { hash: ' + JSON.stringify(hashStr(source)) + ' });\n' +
+    '})();\n';
+
+  return '<!doctype html>\n' +
+'<html lang="en">\n' +
+'<head>\n' +
+'<meta charset="utf-8">\n' +
+'<meta name="viewport" content="width=device-width,initial-scale=1">\n' +
+'<title>' + esc(title) + '</title>\n' +
+'<style>\n' +
+'html,body{margin:0;background:#1e1e1e;color:#d4d4d4;\n' +
+'  font:15px/1.75 ui-monospace,Menlo,Monaco,Consolas,monospace}\n' +
+'body{max-width:44rem;margin:0 auto;padding:2.5rem 1.25rem 6rem}\n' +
+'#out p{margin:0 0 .85em;white-space:pre-wrap}\n' +
+'#out pre.pre{margin:0 0 .85em;white-space:pre;overflow-x:auto;font:inherit;line-height:1.3}\n' +
+'#out p.echo{color:#9cdcfe;opacity:.6;margin-bottom:.35em}\n' +
+'#out p.err{color:#f48771}\n' +
+'#out p.sys{color:#6a9955;font-style:italic}\n' +
+'#out p.end{color:#ce9178;font-style:italic;text-align:center}\n' +
+'#out p.prompt{color:#d99058;font-style:italic}\n' +
+'#out em{color:#9cdcfe;font-style:italic}\n' +
+'#out strong{color:#e7e7e7;font-weight:600}\n' +
+'#choices{list-style:none;padding:0;margin:.8em 0 0}\n' +
+'#choices button{background:none;border:0;color:#d99058;font:inherit;\n' +
+'  cursor:pointer;padding:.2em 0;text-align:left;display:flex;gap:.8em;width:100%}\n' +
+'#choices button:hover,#choices button:focus-visible{color:#e6a56f;text-decoration:underline}\n' +
+'#choices .num{color:#8a8a8a}\n' +
+'#form{margin-top:1.6em}\n' +
+'#cmd{width:100%;box-sizing:border-box;background:#3c3c3c;border:1px solid #3c3c3c;color:#e7e7e7;\n' +
+'  font:inherit;padding:.55em .75em;border-radius:3px;outline:0}\n' +
+'#cmd:focus{border-color:#d99058}\n' +
+'#form.awaiting #cmd{border-color:#d99058;box-shadow:0 0 0 1px #d99058}\n' +
+'</style>\n' +
+'</head>\n' +
+'<body>\n' +
+'<main id="out" role="log" aria-live="polite" aria-label="Story"></main>\n' +
+'<ul id="choices" aria-label="Choices"></ul>\n' +
+'<form id="form"><input id="cmd" aria-label="Command" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="type a command…"></form>\n' +
+'<script>\n' + runtime + '\n' + boot + '<\/script>\n' +
+'</body>\n' +
+'</html>';
+}
+
+function exportHtml(){
+  const game = parse(currentText);
+  const errs = lint(game).filter(function(p){ return p.sev === 'error'; });
+  if (errs.length && !confirm(errs.length + ' error(s) found. Export anyway?')) return;
+  const html = buildStandalone(currentText);
+  const base = (fileName || 'game.tgame').replace(/\.tgame$/i, '');
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = base + '.html';
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 500);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EXAMPLES
+   ═══════════════════════════════════════════════════════════════════ */
+const FENCE = '```';
+const EXAMPLES = {
+  cave: {
+    label: 'The Cave',
+    hint: 'inventory + conditions',
+    source: String.raw`@format 3
+@title The Cave
+@author You
+@start entrance
+
+@set score = 0
+
+:: entrance
+The cave mouth yawns open in the hillside.
+Cold air spills out, smelling of wet stone.
+
+if not has lamp:
+A rusted brass lamp lies half-buried in the dirt.
+* Take the lamp -> entrance [get lamp, score += 5]
+end
+
+* Go north into the cave -> dark_hall
+* Walk back to the village -> village
+
+:: dark_hall
+if has lamp:
+By the lamp's thin light you see a door to the east
+and a low passage leading north.
+* Open the door -> treasure
+* Follow the passage -> deep
+else:
+It's pitch black in here. Something is breathing,
+slowly, somewhere ahead of you.
+* Retreat -> entrance
+end
+
+:: deep
+The passage narrows and then stops entirely.
+Something glitters in the rock at eye level.
+* Pry it loose -> treasure [get gem, score += 50]
+* Go back -> dark_hall
+
+:: treasure
+Gold. Actual gold, warm to the touch.
+You are rich, and possibly cursed.
+
+You are carrying {inventory}.
+Your score: {score}
+-> END
+
+:: village
+The village is warm and boring. You go home.
+
+Your score: {score}
+-> END
+`
+  },
+  rock: {
+    label: 'Magic Rock',
+    hint: 'variables & conditions',
+    source: String.raw`@format 3
+@title The Magic Rock
+@start beach
+
+@set polished = false
+@set score = 0
+
+:: beach
+You find a dull grey rock on the sand.
+
+if polished:
+The rock gleams faintly in the afternoon sun.
+else:
+It's just an ordinary rock. Boring, even.
+end
+
+* Polish the rock -> beach [polished = true, score += 1]
+* Throw it in the sea -> sea
+* Put it in your pocket -> pocket [get rock]
+
+:: sea
+You hurl the rock into the waves. It sinks immediately.
+Somewhere, a fish is disappointed.
+
+Score: {score}
+-> END
+
+:: pocket
+You put the rock in your pocket. It is a good rock.
+
+Score: {score}
+-> END
+`
+  },
+  counter: {
+    label: 'Counter',
+    hint: 'self-looping choices',
+    source: String.raw`@format 3
+@title Counter
+@start start
+
+@set n = 0
+@set clicks = 0
+
+:: start
+The counter shows: {n}
+
+You've pressed the button {clicks} {clicks == 1 | time | times}.
+
+* Press the button [n += 1, clicks += 1]
+* Reset [n = 0, clicks = 0]
+* Stop -> END
+`
+  },
+  name: {
+    label: 'Your Name',
+    hint: 'typed input (text / number)',
+    source: String.raw`@format 3
+@title Your Name
+@start start
+
+:: start
+A robed figure sits at a desk. They look up.
+
+? What is your name? [name:text] -> age
+
+:: age
+"Welcome, {name}."
+
+? And how many winters have you seen? [winters:number] -> greeting
+
+:: greeting
+They hand you a key.
+[get key]
+
+if winters >= 60:
+"A long road, {name}."
+else:
+"Young, still."
+end
+
+Your inventory: {inventory}.
+-> END
+`
+  },
+  mood: {
+    label: 'Mood Piece',
+    hint: 'pauses & typewriter',
+    source: String.raw`@format 3
+@title The Empty House
+@start hall
+
+@typewriter slow
+
+:: hall
+You push the door open. It swings inward without a sound.
+
+...
+
+The hallway is long and narrow. Dust hangs in the air,
+lit by a single window at the far end.
+
+...
+
+~type
+Somewhere in the house, a clock is ticking.
+~normal
+
+... 1500
+
+Then it stops.
+
+* Walk down the hall -> hall_end
+* Leave -> END
+
+:: hall_end
+The hallway is much longer than it looked from the door.
+-> END
+`
+  },
+  parser: {
+    label: 'Typed Commands',
+    hint: 'parser mode, aliases, disambiguation',
+    source: String.raw`@format 3
+@title Parser Demo
+@start hall
+@parser
+@ignore the a an
+
+:: hall
+A narrow hall. A DOOR is east, and a LAMP sits on a table.
+
+* Look at the lamp | examine lamp, x lamp -> hall
+* Take the lamp | get lamp, grab lamp -> hall [get lamp]
+* Open the door | go east, east -> corridor
+
+// Type "lamp" to see disambiguation. "help", "undo" and "save" work too.
+
+:: corridor
+You step through into a brighter corridor.
+
+* Go back | west -> hall
+* Continue -> END
+`
+  },
+  tunnels: {
+    label: 'Tunnels, Once & Paragraphs',
+    hint: '>> snippets, once, enter, tags, verbatim',
+    source: String.raw`@format 3
+@title Tunnels and Once
+@start gate
+
+@set coins = 3
+@list notes
+
+// Consecutive lines form one paragraph. A blank line starts a new one.
+// A line ending in a backslash is a hard line break.
+
+:: gate #hub
+The gate stands open. You have {coins} {coins == 1 | coin | coins}\
+in your pocket.
+
+>> weather
+
+* Pick up the coin in the dirt -> gate [coins += 1, once]
+* Read the sign -> sign
+* Walk through -> END
+
+// A passage called with >> is a snippet: text and effects only.
+:: weather #snippet
+{if coins > 3}The sun is out and the coins feel heavy.{else}Clouds gather over the gate.{end}
+
+:: sign
+[enter notes add sign]
+[once coins += 1]
+` + FENCE + String.raw`
+   _____________
+  |  WELCOME    |
+  |  TRAVELLER  |
+  |_____________|
+` + FENCE + String.raw`
+
+The sign is spotted with rust. Notes so far: {notes}.
+
+* Back to the gate -> gate
+`
+  },
+  hello: {
+    label: 'Hello, World',
+    hint: 'absolute minimum',
+    source: String.raw`@format 3
+@title Hello, World
+@start start
+
+:: start
+Hello, world!
+
+This is a tgame — a tiny interactive story.
+
+* Say goodbye -> END
+* Say hello again -> start
+`
+  }
+};
+
+function loadExample(key){
+  const ex = EXAMPLES[key];
+  if (!ex) return;
+  if (!confirm('Load "' + ex.label + '"? Your current file will be replaced.')) return;
+  applySource(ex.source);
+  setFileName(key + '.tgame');
+  scheduleLint();
+  scheduleAutosave();
+  runGame();
+}
+
+(function buildExamplesList(){
+  const list = $('examples-list');
+  const keys = Object.keys(EXAMPLES);
+  for (let i = 0; i < keys.length; i++){
+    const key = keys[i];
+    const ex = EXAMPLES[key];
+    const el = document.createElement('div');
+    el.className = 'row example';
+    el.innerHTML =
+      '<span class="icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">' +
+        '<path d="M4 12.5A2.5 2.5 0 0 1 6.5 10H13"/>' +
+        '<path d="M6.5 2H13v12H6.5A2.5 2.5 0 0 1 4 11.5v-7A2.5 2.5 0 0 1 6.5 2z"/>' +
+      '</svg></span>' +
+      '<span class="body"><span class="label">' + esc(ex.label) + '</span>' +
+      '<span class="desc">' + esc(ex.hint) + '</span></span>';
+    el.onclick = (function(k){ return function(){ loadExample(k); }; })(key);
+    list.appendChild(el);
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODALS / TUTORIAL / PALETTE
+   ═══════════════════════════════════════════════════════════════════ */
+function openModal(id){ $(id).hidden = false; }
+function closeModal(id){ $(id).hidden = true; }
+
+$('btn-help-activity').onclick = function(){ openModal('help-modal'); };
+$('help-close').onclick = function(){ closeModal('help-modal'); };
+$('welcome-skip').onclick = function(){
+  closeModal('welcome-modal');
+  try { localStorage.setItem('tgame.seen', '1'); } catch(e){}
+};
+$('welcome-tour').onclick = function(){
+  closeModal('welcome-modal');
+  try { localStorage.setItem('tgame.seen', '1'); } catch(e){}
+  startTutorial();
+};
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    closeModal('help-modal');
+    closeModal('welcome-modal');
+    closeModal('tutorial-modal');
+    closePalette();
+  }
+});
+document.querySelectorAll('.overlay').forEach(function(o){
+  o.onclick = function(e){
+    if (e.target === o && o.id !== 'welcome-modal' && o.id !== 'tutorial-modal') o.hidden = true;
+  };
+});
+
+const TUTORIAL = [
+  { title: 'Welcome to tgame',
+    body: '<p>tgame is a tiny language for text adventures. Every game is a single ' +
+          'plain text file.</p>' +
+          '<p>The <strong>editor</strong> is in the middle. The <strong>play panel</strong> ' +
+          'at the bottom runs your game as you type. The <strong>activity rail</strong> ' +
+          'on the far left switches views.</p>' +
+          '<p style="color:var(--text-dim); font-size:12.5px">Press ' +
+          '<kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>P</kbd> any time for the command palette.</p>' },
+  { title: 'A passage is a place',
+    body: '<p>Every location in your story is a <strong>passage</strong>. Start one ' +
+          'with <code>:: name</code>.</p>' +
+          '<p>Consecutive lines make one paragraph; a blank line starts a new one.</p>',
+    code: '@format 3\n\n:: entrance\nYou stand at the mouth of a cave.\nA cold wind spills out.\n\nSomething moves in the dark.' },
+  { title: 'Choices and inventory',
+    body: '<p>A line starting with <code>*</code> gives the player a choice. Add a ' +
+          'target to move; leave it off to <strong>stay in place</strong>.</p>' +
+          '<p><code>[get X]</code> manages the inventory. <code>if has X:</code> checks it. ' +
+          '<code>once</code> hides a choice after it is taken.</p>',
+    code: '* Take the lamp -> entrance [get lamp, once]\n* Toggle the lantern [lamp = not lamp]\n* Go north -> dark_hall\n\nif has lamp:\nThe lamp glows.\nend' },
+  { title: 'Pacing',
+    body: '<p>A line that is just <code>...</code> waits half a second. Add a duration to taste.</p>' +
+          '<p>Toggle the typewriter effect with <code>~type</code> and ' +
+          '<code>~normal</code>. Click anywhere in the play panel to skip.</p>',
+    code: 'The lights flicker.\n...\n... 800\nThe lights go out.\n\n~type\nA voice whispers your name.\n~normal' },
+  { title: 'Save, restore, undo',
+    body: '<p>Every game gets <strong>undo</strong>, <strong>save</strong> and <strong>load</strong> for free. ' +
+          'Type them in the play panel or use its buttons.</p>' +
+          '<p>It works because the engine is deterministic: a save is just the random seed plus the choices made.</p>' },
+  { title: "That's the whole language",
+    body: '<p>Everything you just read composes into complete games.</p>' +
+          '<p>Press the <strong>?</strong> activity at the bottom of the rail for ' +
+          'the full reference. Try an <strong>Example</strong> to see a finished game.</p>' +
+          '<p style="color:var(--text-dim); font-size:12.5px">Now go write something strange.</p>',
+    isLast: true }
+];
+let tutIndex = 0;
+function startTutorial(){ tutIndex = 0; renderTutorial(); openModal('tutorial-modal'); }
+function renderTutorial(){
+  const step = TUTORIAL[tutIndex];
+  $('tut-title').textContent = step.title;
+  let html = step.body;
+  if (step.code) html += '<pre>' + highlight(step.code) + '</pre>';
+  $('tut-body').innerHTML = html;
+  const dots = $('tut-dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < TUTORIAL.length; i++){
+    const d = document.createElement('i');
+    if (i === tutIndex) d.className = 'on';
+    dots.appendChild(d);
+  }
+  $('tut-back').disabled = tutIndex === 0;
+  $('tut-next').textContent = step.isLast ? 'Done' : 'Next';
+}
+$('tut-back').onclick = function(){ if (tutIndex > 0){ tutIndex--; renderTutorial(); } };
+$('tut-next').onclick = function(){
+  if (tutIndex < TUTORIAL.length - 1){ tutIndex++; renderTutorial(); }
+  else closeModal('tutorial-modal');
+};
+
+const COMMANDS = [
+  { id:'run',      label:'Run Game',                 hint:'Ctrl+Enter',  run: function(){ runGame(); } },
+  { id:'restart',  label:'Restart Game',             hint:'',            run: function(){ runGame(); } },
+  { id:'undo',     label:'Undo Last Move',           hint:'',            run: function(){ player.undo(); } },
+  { id:'savegame', label:'Save Game (play slot)',    hint:'',            run: function(){ player.saveSlot(); } },
+  { id:'loadgame', label:'Load Game (play slot)',    hint:'',            run: function(){ player.loadSlot(); } },
+  { id:'new',      label:'New File',                 hint:'Ctrl+N',      run: newFile },
+  { id:'open',     label:'Open File…',               hint:'Ctrl+O',      run: function(){ $('file-input').click(); } },
+  { id:'save',     label:'Save As…',                 hint:'Ctrl+S',      run: downloadFile },
+  { id:'export',   label:'Export Standalone HTML…',  hint:'',            run: exportHtml },
+  { id:'panel',    label:'Toggle Panel',             hint:'Ctrl+J',      run: function(){ app.classList.toggle('panel-hidden'); if (cm) cm.refresh(); } },
+  { id:'sidebar',  label:'Toggle Sidebar',           hint:'Ctrl+B',      run: function(){ sidebarHidden = !sidebarHidden; applyLayout(); if (cm) cm.refresh(); } },
+  { id:'story',    label:'Show Story',               hint:'',            run: function(){ currentActivity = 'story'; sidebarHidden = false; applyLayout(); } },
+  { id:'map',      label:'Show Map',                 hint:'',            run: function(){ currentActivity = 'map'; sidebarHidden = false; applyLayout(); } },
+  { id:'problems', label:'Show Problems',            hint:'',            run: function(){ currentActivity = 'problems'; sidebarHidden = false; applyLayout(); } },
+  { id:'examples', label:'Show Examples',            hint:'',            run: function(){ currentActivity = 'examples'; sidebarHidden = false; applyLayout(); } },
+  { id:'vars',     label:'Show State',               hint:'',            run: function(){ currentActivity = 'vars'; sidebarHidden = false; applyLayout(); } },
+  { id:'help',     label:'Show Language Reference',  hint:'?',           run: function(){ openModal('help-modal'); } },
+  { id:'tutorial', label:'Start Tutorial',           hint:'',            run: startTutorial }
+];
+(function(){
+  const keys = Object.keys(EXAMPLES);
+  for (let i = 0; i < keys.length; i++){
+    const k = keys[i];
+    COMMANDS.push({
+      id: 'example-' + k,
+      label: 'Load Example: ' + EXAMPLES[k].label,
+      hint: EXAMPLES[k].hint,
+      run: (function(key){ return function(){ loadExample(key); }; })(k)
+    });
+  }
+})();
+
+let paletteSel = 0;
+let paletteFiltered = [];
+function openPalette(){
+  $('palette-overlay').hidden = false;
+  const input = $('palette-input');
+  input.value = '';
+  input.focus();
+  filterPalette('');
+}
+function closePalette(){ $('palette-overlay').hidden = true; }
+function filterPalette(q){
+  const low = q.toLowerCase();
+  paletteFiltered = COMMANDS.filter(function(c){
+    return c.label.toLowerCase().indexOf(low) >= 0
+        || (c.hint || '').toLowerCase().indexOf(low) >= 0;
+  });
+  paletteSel = 0;
+  renderPalette();
+}
+function renderPalette(){
+  const list = $('palette-list');
+  if (!paletteFiltered.length){
+    list.innerHTML = '<div class="palette-empty">No matching commands.</div>';
+    return;
+  }
+  let html = '';
+  for (let i = 0; i < paletteFiltered.length; i++){
+    const c = paletteFiltered[i];
+    html += '<div class="palette-item' + (i === paletteSel ? ' sel' : '') + '" data-i="' + i + '">' +
+            '<span class="label">' + esc(c.label) + '</span>' +
+            (c.hint ? '<span class="hint">' + esc(c.hint) + '</span>' : '') +
+            '</div>';
+  }
+  list.innerHTML = html;
+  const items = list.querySelectorAll('.palette-item');
+  for (let i = 0; i < items.length; i++){
+    items[i].onclick = (function(idx){
+      return function(){
+        const c = paletteFiltered[idx];
+        closePalette();
+        if (c) c.run();
+      };
+    })(+items[i].dataset.i);
+  }
+}
+$('palette-input').addEventListener('input', function(e){ filterPalette(e.target.value); });
+$('palette-input').addEventListener('keydown', function(e){
+  if (e.key === 'ArrowDown'){ e.preventDefault(); paletteSel = Math.min(paletteFiltered.length - 1, paletteSel + 1); renderPalette(); }
+  else if (e.key === 'ArrowUp'){ e.preventDefault(); paletteSel = Math.max(0, paletteSel - 1); renderPalette(); }
+  else if (e.key === 'Enter'){
+    e.preventDefault();
+    const c = paletteFiltered[paletteSel];
+    closePalette();
+    if (c) c.run();
+  }
+});
+$('palette-overlay').onclick = function(e){
+  if (e.target === $('palette-overlay')) closePalette();
+};
+$('st-palette').onclick = openPalette;
+$('st-problems').onclick = function(){
+  currentActivity = 'problems';
+  sidebarHidden = false;
+  applyLayout();
+};
+
+document.addEventListener('keydown', function(e){
+  const cmd = e.ctrlKey || e.metaKey;
+  if (cmd && e.shiftKey && e.key.toLowerCase() === 'p'){
+    e.preventDefault();
+    if ($('palette-overlay').hidden) openPalette();
+    else closePalette();
+    return;
+  }
+  if (cmd && e.key === 'Enter'){ e.preventDefault(); runGame(); return; }
+  if (cmd && e.key.toLowerCase() === 's'){ e.preventDefault(); downloadFile(); return; }
+  if (cmd && e.key.toLowerCase() === 'o'){ e.preventDefault(); $('file-input').click(); return; }
+  if (cmd && e.key.toLowerCase() === 'n'){ e.preventDefault(); newFile(); return; }
+  if (cmd && e.key.toLowerCase() === 'j'){ e.preventDefault(); app.classList.toggle('panel-hidden'); if (cm) cm.refresh(); return; }
+  if (cmd && e.key.toLowerCase() === 'b'){ e.preventDefault(); sidebarHidden = !sidebarHidden; applyLayout(); if (cm) cm.refresh(); return; }
+  if (e.key === '?' && !(cm && cm.hasFocus()) &&
+      ['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName) < 0){
+    e.preventDefault();
+    openModal('help-modal');
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   TEMPLATE & BOOT
+   ═══════════════════════════════════════════════════════════════════ */
+const TEMPLATE_SOURCE = String.raw`@format 3
+@title My Game
+@author Your Name
+@start start
+
+// ─────────────────────────────────────────────────────────────
+// Welcome to tgame studio — format 3.
+//
+//     :: name              start a passage (a place)
+//     plain text           narration; consecutive lines form a paragraph
+//     (blank line)         new paragraph
+//     * Label -> target    a choice that jumps to another passage
+//     * Label [effect]     a choice that stays in place
+//     * Label [once]       a choice that disappears after it is taken
+//     ? question [var]     ask the player a question
+//     ...                  pause half a second (or: ... 800, ... 2s)
+//     ~type / ~normal      toggle the typewriter effect
+//     [get X] [drop X]     inventory
+//     if has X: ... end    check inventory
+//     >> name              run another passage in place (a snippet)
+//     @set x = 0           declare a variable
+//     @list clues          declare a list
+//     {variable}           insert a value into text
+//     \-> or \*            escape: render as literal text
+//
+// Press ? for the full reference, or open an Example from the
+// activity rail on the left to see a finished game.
+// ─────────────────────────────────────────────────────────────
+
+@set score = 0
+
+:: start
+Replace this line with your opening paragraph.
+
+* Go somewhere -> somewhere
+* Finish here -> END
+
+:: somewhere
+You went somewhere. Congratulations!
+
+Your score is {score}.
+
+* Back to the start -> start
+* Finish -> END
+`;
+
+(function boot(){
+  let source = TEMPLATE_SOURCE;
+  let name = 'untitled.tgame';
+  try {
+    const saved = localStorage.getItem('tgame.source');
+    const savedName = localStorage.getItem('tgame.name');
+    if (saved && saved.trim()){ source = saved; name = savedName || name; }
+  } catch(e){}
+
+  initEditor();
+  applySource(source);
+  applyLayout();
+  setFileName(name);
+  runGame();
+  clearDirty();
+  if (cm) cm.focus();
+
+  let seen = false;
+  try { seen = !!localStorage.getItem('tgame.seen'); } catch(e){}
+  if (!seen) setTimeout(function(){ openModal('welcome-modal'); }, 350);
+})();
+</script>
+</body>
+</html>

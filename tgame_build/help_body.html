@@ -1,0 +1,102 @@
+      <h3>Directives</h3>
+      <p>Directives are global. Put them above the first passage.</p>
+      <pre>@format  3            <span style="color:var(--syn-comment)">// required; a newer number is refused by older runtimes</span>
+@title   My Game
+@author  You
+@start   entrance
+@set     score = 0     <span style="color:var(--syn-comment)">// evaluated once, at game start</span>
+@list    clues
+@seed    42            <span style="color:var(--syn-comment)">// same seed + same choices = same game</span>
+@parser                <span style="color:var(--syn-comment)">// typed commands instead of buttons</span>
+@ignore  the a an      <span style="color:var(--syn-comment)">// words the matcher skips</span>
+@typewriter fast       <span style="color:var(--syn-comment)">// or: slow, off, or ms per character</span></pre>
+      <p><code>@format 2</code> files still run: every line stays its own paragraph.</p>
+
+      <h3>Passages</h3>
+      <p>Start one with <code>:: name</code>, optionally followed by <code>#tags</code>. Names use letters (any language), digits, <code>_</code> and <code>-</code>, are case-insensitive, and <code>END</code> is reserved.</p>
+      <pre>:: entrance #outdoors
+The cave mouth yawns open.</pre>
+
+      <h3>Paragraphs</h3>
+      <p>Consecutive lines join into one paragraph. A blank line starts a new one. End a line with <code>\</code> for a hard line break. Leading indentation is ignored.</p>
+      <p>For ASCII art or anything that must stay exactly as typed, fence it with triple backticks. Fenced lines are literal: no escapes, no <code>{braces}</code>.</p>
+
+      <h3>Choices</h3>
+      <p><code>*</code> gives the player a choice. End with <code>-&gt; target</code> to move; omit it to stay. Effects go in brackets at the end. Add <code>once</code> to hide the choice after it is taken. After <code>|</code>, list extra words the player can type.</p>
+      <pre>* Take the lamp | get lamp, grab lamp -&gt; entrance [get lamp, once]
+* Toggle the lantern [lamp = not lamp]
+* Go north -&gt; dark_hall</pre>
+
+      <h3>Typed input</h3>
+      <pre>? What is your name? [name:text] -&gt; next
+? How old are you? [age:number]</pre>
+      <p><code>:text</code> keeps the answer as text, <code>:number</code> re-asks until it is a number. With no type, numeric answers become numbers.</p>
+
+      <h3>Typed commands (@parser)</h3>
+      <p>Input is matched against choices: a number, the exact label or an alias, then any words of the label in order. If more than one choice fits, the player is asked which. <code>help</code>, <code>undo</code>, <code>save</code> and <code>load</code> always work.</p>
+
+      <h3>Pause and typewriter</h3>
+      <pre>...          <span style="color:var(--syn-comment)">// half a second</span>
+... 800
+... 2s
+~type  ~normal  ~fast  ~slow</pre>
+      <p>Click the play panel to skip a paragraph. Reduced-motion users get no typewriter.</p>
+
+      <h3>Variables and inline text</h3>
+      <pre>@set score = 0
+You have {score} {score == 1 | point | points}.
+{if has lamp}The lamp glows, and you carry {count inventory}.{else}It is dark.{end}</pre>
+      <p>Inline <code>{if}</code> blocks may nest and contain other <code>{braces}</code>. Variable names are case-sensitive.</p>
+
+      <h3>Inventory and lists</h3>
+      <p>Items, passage names and directives are case-insensitive.</p>
+      <pre>[get lamp]   [drop lamp]   [clear inventory]
+[clues add footprints]   [clues remove footprints]   [clues clear]
+You are carrying {inventory}.   Clues: {clues}</pre>
+
+      <h3>Conditions (one grammar, everywhere)</h3>
+      <p><code>or</code> &lt; <code>and</code> &lt; <code>not</code> &lt; comparisons &lt; <code>+ -</code> &lt; <code>* / %</code>. So <code>not has lamp and score &gt; 5</code> means <code>(not has lamp) and (score &gt; 5)</code>.</p>
+      <pre>if has lamp and score &gt; 5:
+You feel confident.
+else:
+You hesitate.
+end
+
+has lamp     has no lamp     clues has footprints
+visited village     visits == 1     count clues &gt; 2</pre>
+
+      <h3>When effects run</h3>
+      <p>A standalone <code>[effect]</code> line runs every time the passage is drawn, including after a stay-in-place choice. Prefix it to control that:</p>
+      <pre>[enter score += 1]    <span style="color:var(--syn-comment)">// only when you arrive from elsewhere</span>
+[once get coin]       <span style="color:var(--syn-comment)">// only the first time, ever</span></pre>
+      <p><code>visits</code> counts arrivals, not redraws.</p>
+
+      <h3>Snippets</h3>
+      <p><code>&gt;&gt; name</code> runs another passage in place, then carries on. A snippet may contain text, conditions and effects, but no choices or jumps.</p>
+
+      <h3>Randomness</h3>
+      <pre>[roll = random(1, 6)]</pre>
+      <p>Seeded and deterministic (mulberry32), including in <code>@set</code>. Same seed and same inputs always replay the same game.</p>
+
+      <h3>Save, restore, undo</h3>
+      <p>Type <code>undo</code>, <code>save</code> or <code>load</code>, or use the buttons in the play panel. A save is the seed plus the list of choices; loading replays it.</p>
+
+      <h3>Escaping</h3>
+      <p>A backslash makes the next character literal. A line that starts with a backslash is always narration, so <code>\if</code>, <code>\end</code>, <code>\// not a comment</code> all work.</p>
+      <pre>\-&gt;   \*   \?   \.   \~   \::   \@   \[   \]   \{   \}   \|   \/   \#   \\</pre>
+
+      <h3>Comments</h3>
+      <p><code>//</code> at the start of a line is a comment. Elsewhere on a line it is ordinary text, so URLs are fine.</p>
+
+      <h3>Keyboard</h3>
+      <p>
+        <kbd>Ctrl</kbd><kbd>Enter</kbd> Run &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>P</kbd> Command palette &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>J</kbd> Toggle panel &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>B</kbd> Toggle sidebar<br>
+        <kbd>Ctrl</kbd><kbd>S</kbd> Save &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>O</kbd> Open &nbsp;·&nbsp;
+        <kbd>Ctrl</kbd><kbd>N</kbd> New &nbsp;·&nbsp;
+        <kbd>Tab</kbd> Indent &nbsp;·&nbsp;
+        <kbd>Esc</kbd> Close dialogs
+      </p>
