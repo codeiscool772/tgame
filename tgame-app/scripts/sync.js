@@ -50,7 +50,7 @@ h = must(h, "label:'Save As\u2026'", "label:'Save'");
 h = must(h, "{ id:'save',",
   "{ id:'saveas',   label:'Save As…',                 hint:'Ctrl+Shift+S', run: function(){ if (window.tgameHost) hostSave(true); else downloadFile(); } },\n" +
   "  { id:'lite',     label:'Play in tgame Lite',       hint:'',            run: function(){ playInLite(); } },\n" +
-  "  { id:'updates',  label:'Check for updates�',       hint:'',            run: function(){ if (window.tgameHost) window.tgameHost.checkForUpdates(); } },\n" +
+  "  { id:'updates',  label:'Check for updates…',       hint:'',            run: function(){ if (window.tgameHost) window.tgameHost.checkForUpdates(); } },\n" +
   "  { id:'save',");
 h = must(h, "const base = (fileName || 'game.tgame').replace(/\\.tgame$/i, '');",
   "const base = (fileName || 'game.tgame').replace(/\\.tgame$/i, '');\n" +

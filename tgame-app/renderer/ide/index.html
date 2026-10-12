@@ -3545,7 +3545,7 @@ const COMMANDS = [
   { id:'open',     label:'Open File…',               hint:'Ctrl+O',      run: function(){ openFileDialog(); } },
   { id:'saveas',   label:'Save As…',                 hint:'Ctrl+Shift+S', run: function(){ if (window.tgameHost) hostSave(true); else downloadFile(); } },
   { id:'lite',     label:'Play in tgame Lite',       hint:'',            run: function(){ playInLite(); } },
-  { id:'updates',  label:'Check for updates�',       hint:'',            run: function(){ if (window.tgameHost) window.tgameHost.checkForUpdates(); } },
+  { id:'updates',  label:'Check for updates…',       hint:'',            run: function(){ if (window.tgameHost) window.tgameHost.checkForUpdates(); } },
   { id:'save',     label:'Save',                 hint:'Ctrl+S',      run: downloadFile },
   { id:'export',   label:'Export Standalone HTML…',  hint:'',            run: exportHtml },
   { id:'panel',    label:'Toggle Panel',             hint:'Ctrl+J',      run: function(){ app.classList.toggle('panel-hidden'); if (cm) cm.refresh(); } },

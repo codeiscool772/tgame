@@ -33,6 +33,20 @@ console.log('\narguments');
   ok('packaged vs dev argv', userArgs(['tgame.exe', '--ide'], false)[0] === '--ide' && userArgs(['electron', '.', '--ide'], true)[0] === '--ide');
 }
 
+/* ------------------------------------------------------------ source encoding
+   A UTF-8 BOM in package.json broke the release build once (@electron/rebuild uses a strict JSON.parse). */
+console.log('\nencoding');
+{
+  const files = ['package.json', 'src/main.js', 'src/preload.js', 'src/args.js', 'scripts/sync.js', 'renderer/lite/lite.js', 'renderer/ide/index.html'];
+  files.forEach(f => {
+    const b = fs.readFileSync(path.join(appDir, f));
+    let valid = true;
+    try { new TextDecoder('utf-8', { fatal: true }).decode(b); } catch (e) { valid = false; }
+    ok(f + ': valid UTF-8, no BOM', valid && !(b[0] === 0xEF && b[1] === 0xBB && b[2] === 0xBF));
+  });
+  ok('package.json parses strictly', (() => { try { JSON.parse(fs.readFileSync(path.join(appDir, 'package.json'), 'utf8')); return true; } catch (e) { return false; } })());
+}
+
 /* ------------------------------------------------------------ real windows */
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tgame test ñ '));
 const GOOD = '@format 3\n@title Smoke Story\n@start a\n:: a\nHello from the story.\n* Go on -> b\n:: b\nThe end.\n-> END\n';

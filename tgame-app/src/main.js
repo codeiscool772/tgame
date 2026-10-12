@@ -161,7 +161,7 @@ function buildLiteMenu(rec) {
       { type: 'separator' }, { role: 'togglefullscreen' }, { role: 'toggleDevTools' },
     ] },
     { label: '&Help', submenu: [
-      { label: 'Check for &updates�', click: () => checkForUpdates(rec.win) },
+      { label: 'Check for &updates…', click: () => checkForUpdates(rec.win) },
       { label: 'About tgame', click: () => dialog.showMessageBox(rec.win, {
         type: 'info', title: 'tgame', message: 'tgame ' + app.getVersion(),
         detail: 'Lite plays .tgame stories. The IDE edits them.\nElectron ' + process.versions.electron + ' · format 3' }) },
