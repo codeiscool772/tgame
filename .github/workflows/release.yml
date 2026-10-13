@@ -10,6 +10,8 @@ permissions:
 jobs:
   windows:
     runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,8 +29,27 @@ jobs:
         run: |
           npm run sync
           npm test
-      - name: build and publish the installer
+
+      # electron-builder uploads the installer and its block map in parallel and, if no release exists yet,
+      # each upload creates one: two releases for one tag, the files split between them. Create it first.
+      - name: create the release
+        shell: bash
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || \
+            gh release create "$GITHUB_REF_NAME" --verify-tag --title "tgame ${GITHUB_REF_NAME#v}" --generate-notes
+
+      - name: build and upload the installer
         working-directory: tgame-app
         run: npx electron-builder --win nsis --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: the release has one entry with all three files
+        shell: bash
+        run: |
+          n=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq "[.[] | select(.tag_name==\"$GITHUB_REF_NAME\")] | length")
+          [ "$n" = "1" ] || { echo "expected 1 release for $GITHUB_REF_NAME, found $n"; exit 1; }
+          assets=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
+          echo "$assets"
+          v="${GITHUB_REF_NAME#v}"
+          for f in latest.yml "tgame-setup-$v.exe" "tgame-setup-$v.exe.blockmap"; do
+            echo "$assets" | grep -qx "$f" || { echo "missing $f"; exit 1; }
+          done

@@ -114,6 +114,8 @@ if (process.env.TGAME_TEST_UPDATES) {
   console.log('\nupdates (needs network + a published release)');
   const r = launch(['--smoke=update']);
   ok('app finds the newest GitHub release for a pretend-old version', r.result && r.result.available === true && /^\d+\.\d+\.\d+/.test(r.result.version), r.result || r.out.slice(-300));
+  const same = (() => { process.env.TGAME_PRETEND_VERSION = '0.1.0'; const x = launch(['--smoke=update']); delete process.env.TGAME_PRETEND_VERSION; return x; })();
+  ok('the current version is reported as up to date', same.result && same.result.available === false, same.result);
   ok('release carries the installer', r.result && (r.result.files || []).some(f => /^tgame-setup-.*\.exe$/.test(f)), r.result);
 }
 try { fs.rmSync(tmp, { recursive: true, force: true }); } catch (e) { /* temp */ }

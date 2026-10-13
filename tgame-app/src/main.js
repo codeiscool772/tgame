@@ -325,7 +325,10 @@ async function updateSmoke() {
     u.forceDevUpdateConfig = true;
     u.updateConfigPath = cfg;
     u.autoDownload = false;
-    u.currentVersion = new (require('semver').SemVer)('0.0.1');
+    const pretend = process.env.TGAME_PRETEND_VERSION || '0.0.1';
+    // currentVersion is a SemVer object built with electron-updater's own copy of semver
+    const semver = require(require.resolve('semver', { paths: [require.resolve('electron-updater')] }));
+    u.currentVersion = new semver.SemVer(pretend);
     const r = await u.checkForUpdates();
     finish({ repo: pub.owner + '/' + pub.repo, available: r.isUpdateAvailable, version: r.updateInfo.version,
              files: r.updateInfo.files.map(f => f.url) }, 0);
